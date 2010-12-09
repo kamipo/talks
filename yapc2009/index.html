@@ -1,0 +1,535 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Style-Type" content="text/css; charset=utf-8" />
+<meta http-equiv="Content-Script-Type" content="text/javascript; charset=utf-8" />
+<meta name="generator" content="vim" />
+<meta name="version" content="0.1" />
+<meta name="author" content="MaoTsunekawa" />
+<title>nginxやlighttpdでMogileFSしてみた</title>
+<script type="text/javascript" src="s6.js"></script>
+<script type="text/javascript">
+// <![CDATA[
+
+var bodyStyle = {
+    width: '100%',
+    height: '100%',
+    padding: '0',
+    margin: '0',
+    overflow: 'hidden',
+    backgroundColor: 'gray'
+};
+
+s6.css('html', bodyStyle);
+s6.css('body', bodyStyle);
+
+var pr;
+s6.attach(s6, 'ready', function ready() {
+    var html = document.documentElement;
+    var height = html.offsetHeight;
+    var width = html.offsetWidth;
+    var top = 0;
+    var left = 0;
+
+    if (height / width < 0.75) {
+        var originalWidth = width;
+        width = height / 0.75;
+        left = (originalWidth - width) / 2 + 'px';
+    }
+    else {
+        var originalHeight = height;
+        height = width * 0.75;
+        top = (originalHeight - height) / 2 + 'px';
+    }
+
+    var result;
+    if (result = document.cookie.match(/page=(\d+)/)) {
+        var startIndex = +result[1];
+    }
+
+    pr = new s6.Presentation({ element: document.body, width: width, height: height, startIndex: startIndex });
+    pr.style.left = left;
+    pr.style.top = top;
+    pr.start();
+
+    var indexNoOutline = false;
+
+    pr.funcPages.index.attachPage('click', function(i, element, wrapper) {
+        indexNoOutline = true;
+        setTimeout(function() {
+            indexNoOutline =false
+        }, 1000);
+        wrapper.style.background = '';
+        pr.go(i);
+    });
+
+    pr.funcPages.index.attachPage('mouseover', function(i, element, wrapper) {
+        if (indexNoOutline) return;
+        wrapper.className += ' selected';
+    });
+    
+    pr.funcPages.index.attachPage('mouseout', function(i, element, wrapper) {
+        wrapper.className = 'wrapper';
+    });
+
+    try {
+        var isIframe = !(window.parent == window);
+    } catch(e) {
+        isIframe = true;
+    }
+
+    s6.attach(document,   'keypress Right', 'step', 0, pr);
+    s6.attach(document,   'keypress Left',  'prev', 0, pr);
+    s6.attach(document,   'keypress Up',    function() { pr.go('index') });
+    s6.attach(document,   'keypress Down',  'back', 0, pr);
+});
+
+// Test
+setInterval(function() {
+    document.cookie = 'page=' + pr.index;
+}, 1000);
+// ]]>
+</script>
+<style>
+@media print{
+.s6{
+  top:0 !IMPORTANT;
+  left:0 !IMPORTANT;
+  width:180mm !IMPORTANT;
+  height:265mm !IMPORTANT;
+}
+
+.s6 .index.page .inner.s6 .page .wrapper{
+  width:47% !IMPORTANT;
+  height:32% !IMPORTANT;
+  font-size:40%;
+  line-height:1.2;
+}}
+</style>
+</head>
+<body>
+
+ <h1>nginxやlighttpdでMogileFSしてみた</h1>
+ <address>2009/09/10 YAPC::Asia 2009<br/>id:kamipo</address>
+ <script type="text/javascript">
+   s6.page({ wrap:2, styles: [ { color: 'red' } ] })
+ </script>
+
+ <div>
+  <h3>MogileFSとは</h3>
+  <script type="text/javascript">
+    s6.page({
+       styleBase: 'takahashi'
+    });
+  </script>
+ </div>
+
+ <div>
+   <h3>MogileFSとは</h3>
+   <ul>
+   </ul>
+ </div>
+
+ <div>
+   <h3>MogileFSとは</h3>
+   <ul>
+   <li>分散ファイルストレージ</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>MogileFSとは</h3>
+   <ul>
+   <li>分散ファイルストレージ</li>
+   <li>複数のノードに分散して保存</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>MogileFSとは</h3>
+   <ul>
+   <li>分散ファイルストレージ</li>
+   <li>複数のノードに分散して保存</li>
+   <li>保存/参照は専用のクライアントを使う</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>MogileFSで参照のしくみ</h3>
+   <pre style="font-size: 16px;">
+
+
+
+
+
+
+  ^
+  | http
+  v
++----------+   http   +-------------------------+
+|  client  | <------> | storage node (perlbal)  |
++----------+          +-------------------------+
+  ^                                ^
+  | http                           |
+  v                                |
++---------+         webdav         |
+| tracker |------------------------+
++---------+
+   </pre>
+ </div>
+
+ <div>
+   <h3>これは効率がわるいので…</h3>
+   <pre style="font-size: 16px;">
+
+
+
+
+
+
+  ^
+  | http
+  v
++----------+   http   +-------------------------+
+|  client  | <------> | storage node (perlbal)  |
++----------+          +-------------------------+
+  ^                                ^
+  | http                           |
+  v                                |
++---------+         webdav         |
+| tracker |------------------------+
++---------+
+   </pre>
+ </div>
+
+ <div>
+   <h3>PerlbalでReverseProxy</h3>
+   <pre style="font-size: 16px;">
+  ^
+  | http
+  v
++----------+         http
+| perlbal  |<----------------------+
++----------+                       |
+  ^                                |
+  | http                           |
+  v                                v
++----------+          +-------------------------+
+|  client  |          | storage node (perlbal)  |
++----------+          +-------------------------+
+  ^                                ^
+  | http                           |
+  v                                |
++---------+         webdav         |
+| tracker |------------------------+
++---------+
+   </pre>
+ </div>
+
+ <div>
+   <h3>やりたいこと1</h3>
+   <ul>
+   <li>Storage NodeはただのWebDAVサーバ</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>やりたいこと1</h3>
+   <ul>
+   <li>Storage NodeはただのWebDAVサーバ</li>
+   <li>ここPerlbalじゃなくてもよくね？</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>やりたいこと2</h3>
+   <ul>
+   <li>今どきAppサーバはfastcgiですよね？</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>やりたいこと2</h3>
+   <ul>
+   <li>今どきAppサーバはfastcgiですよね？</li>
+   <li>Perlbalはfastcgiプロトコルが話せない</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>Perlbalのところを</h3>
+   <pre style="font-size: 16px;">
+  ^
+  | http
+  v
++----------+         http
+| perlbal  |<----------------------+
++----------+                       |
+  ^                                |
+  | http                           |
+  v                                v
++----------+          +-------------------------+
+|  client  |          | storage node (perlbal)  |
++----------+          +-------------------------+
+  ^                                ^
+  | http                           |
+  v                                |
++---------+         webdav         |
+| tracker |------------------------+
++---------+
+   </pre>
+ </div>
+
+ <div>
+   <h3>nginxとか</h3>
+   <pre style="font-size: 16px;">
+  ^
+  | http
+  v
++----------+         http
+|  nginx   |<----------------------+
++----------+                       |
+  ^                                |
+  | fastcgi                        |
+  v                                v
++----------+          +-------------------------+
+|  client  |          | storage node   (nginx)  |
++----------+          +-------------------------+
+  ^                                ^
+  | http                           |
+  v                                |
++---------+         webdav         |
+| tracker |------------------------+
++---------+
+   </pre>
+ </div>
+
+ <div>
+   <h3>lighttpdにしたい</h3>
+   <pre style="font-size: 16px;">
+  ^
+  | http
+  v
++----------+         http
+| lighttpd |<----------------------+
++----------+                       |
+  ^                                |
+  | fastcgi                        |
+  v                                v
++----------+          +-------------------------+
+|  client  |          | storage node (lighttpd) |
++----------+          +-------------------------+
+  ^                                ^
+  | http                           |
+  v                                |
++---------+         webdav         |
+| tracker |------------------------+
++---------+
+   </pre>
+ </div>
+
+ <div>
+  <h3>WebDAV</h3>
+  <script type="text/javascript">
+    s6.page({
+       styleBase: 'takahashi'
+    });
+  </script>
+ </div>
+
+ <div>
+   <h3>nginxでWebDAV</h3>
+   <pre style="font-size: 26px;">
+    server {
+        listen 7500;
+        server_name localhost;
+        location / { 
+            root /Users/kamipo/var/mogdata/;
+            dav_methods put delete mkcol copy move;
+            dav_access user:rw group:rw all:r;
+        }
+    }
+   </pre>
+ </div>
+
+ <div>
+   <h3>lighttpdでWebDAV</h3>
+   <pre style="font-size: 26px;">
+server.modules = ( 
+    "mod_webdav",
+)
+
+server.document-root = "/Users/kamipo/var/mogdata"
+server.port          = 7500
+server.bind          = "127.0.0.1"
+webdav.activate      = "enable"
+   </pre>
+ </div>
+
+ <div>
+  <h3>Reverse Proxy</h3>
+  <script type="text/javascript">
+    s6.page({
+       styleBase: 'takahashi'
+    });
+  </script>
+ </div>
+
+ <div>
+   <h3>X-REPROXY-URL</h3>
+   <pre style="font-size: 26px;">
+my @urls = $mogc->get_paths($key);
+
+if ($proxy_type eq 'perlbal') {
+    $res->header('X-REPROXY-URL', join ' ', @urls);
+    $res->header('X-REPROXY-CACHE-FOR', '60; Content-Type');
+    $res->header('Content-Type', $mime);
+}
+   </pre>
+ </div>
+
+ <div>
+   <h3>for nginx</h3>
+   <pre style="font-size: 26px;">
+    server {
+        location / {
+            fastcgi_pass 127.0.0.1:3000;
+            include /usr/local/nginx/conf/fastcgi_params;
+        }
+        location /reproxy {
+            internal;
+            set $reproxy $upstream_http_x_reproxy_url;
+            proxy_pass $reproxy;
+            proxy_hide_header Content-Type;
+        }
+        listen 4000;
+        server_name localhost;
+    }
+   </pre>
+ </div>
+
+ <div>
+   <h3>X-Accel-Redirect</h3>
+   <pre style="font-size: 26px;">
+my @urls = $mogc->get_paths($key);
+
+if ($proxy_type eq 'nginx') {
+    $res->header('X-Accel-Redirect', '/reproxy');
+    $res->header('X-REPROXY-URL', $urls[0]);
+    $res->header('Content-Type', $mime);
+}
+   </pre>
+ </div>
+
+ <div>
+   <h3>for lighttpd</h3>
+   <pre style="font-size: 26px;">
+server.modules += (
+    "mod_proxy_core",
+    "mod_proxy_backend_fastcgi"
+)
+
+$SERVER["socket"] == ":4000" {
+    proxy-core.allow-x-rewrite = "enable"
+    proxy-core.backends = ( "127.0.0.1:3000" )
+    proxy-core.protocol = "fastcgi"
+}
+   </pre>
+ </div>
+
+ <div>
+   <h3>X-Rewrite-URI</h3>
+   <pre style="font-size: 26px;">
+my @urls = $mogc->get_paths($key);
+
+if ($proxy_type eq 'lighttpd') {
+    my ($host, $uri) = $urls[0] =~ m{^http://(.+?)(/.+)$};
+    $res->header('X-Rewrite-URI', $uri);
+    $res->header('X-Rewrite-Host', $host);
+    $res->header('X-Rewrite-Backend', $host);
+    $res->header('Content-Type', $mime);
+}
+   </pre>
+ </div>
+
+ <div>
+  <h2>Demo</h2>
+  <script type="text/javascript">
+    s6.page({
+       styleBase: 'takahashi'
+    });
+  </script>
+ </div>
+
+ <div>
+   <h3>まとめ(Storage Node)</h3>
+   <ul>
+   </ul>
+ </div>
+
+ <div>
+   <h3>まとめ(Storage Node)</h3>
+   <ul>
+   <li>(nginx|lighttpd)をstorage nodeにするのは簡単</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>まとめ(Storage Node)</h3>
+   <ul>
+   <li>(nginx|lighttpd)をstorage nodeにするのは簡単</li>
+   <li>WabDAVが話せるサーバなら何でもOK</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>まとめ(ReverseProxy)</h3>
+   <ul>
+   </ul>
+ </div>
+
+ <div>
+   <h3>まとめ(ReverseProxy)</h3>
+   <ul>
+   <li>nginxはproxyできるけどcacheできない</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>まとめ(ReverseProxy)</h3>
+   <ul>
+   <li>nginxはproxyできるけどcacheできない</li>
+   <li>lighttpdはちゃんと動かない(buggy)</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>まとめ(ReverseProxy)</h3>
+   <ul>
+   <li>nginxはproxyできるけどcacheできない</li>
+   <li>lighttpdはちゃんと動かない(buggy)</li>
+   <li>MogileFSにはやっぱりPerlbal</li>
+   </ul>
+ </div>
+
+ <div>
+   <h3>まとめ(ReverseProxy)</h3>
+   <ul>
+   <li>nginxはproxyできるけどcacheできない</li>
+   <li>lighttpdはちゃんと動かない(buggy)</li>
+   <li>MogileFSにはやっぱりPerlbal</li>
+   </ul>
+ </div>
+
+ <div>
+  <h2>Thanks !!</h2>
+  <script type="text/javascript">
+    s6.page({
+       styleBase: 'takahashi'
+    });
+  </script>
+ </div>
+
+</body>
+</html>
