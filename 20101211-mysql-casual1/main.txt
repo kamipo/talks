@@ -1,0 +1,154 @@
+** MySQL Casual Talks vol.1
+----
+** MySQL Casual Talks vol.1
+* MySQL::Sandboxとか(仮)
+<center>
+2010/12/11
+<img src="kamipo_normal.png" /><a href="http://twitter.com/kamipo" target="_blank">@kamipo</a>
+</center>
+----
+** 聞きたい人いる？
+* 今日はMySQL::Sandboxの話を<br/>しようと思ったんですが
+----
+** Database testing with MySQL::Sandbox
+○ YAPC Asia 2009, September 10th, Japan Tokyo
+○ <a href="http://d.hatena.ne.jp/ZIGOROu/" target="_blank">id:ZIGOROu</a>
+○ zigorou at cpan dot org
+○ DeNA Co.,Ltd
+○ <a href="http://www.art-code.org/presen/yapcasia2009/" target="_blank">http://www.art-code.org/presen/yapcasia2009/</a>
+
+&nbsp;&nbsp;ZIGOROｩさんの資料で勉強してください＞＜
+----
+** MySQL Casual Talks vol.1
+* VP & SPIDER イントロダクション<br/>(Not Only Sharding)
+<center>
+2010/12/11
+<img src="kamipo_normal.png" /><a href="http://twitter.com/kamipo" target="_blank">@kamipo</a>
+</center>
+----
+** About VP & SPIDER
+- MySQLのストレージエンジンプラグイン
+- VPはカラムごとにテーブルを垂直分割
+- SPIDERはテーブルを複数ホストに水平分割(Sharding)
+- 斯波さんが作ってる
+- <a href="http://wild-growth-ja.blogspot.com/" target="_blank">wild-growth-ja.blogspot.com</a>
+- <a href="https://launchpad.net/spiderformysql" target="_blank">launchpad.net/spiderformysql</a>
+- <a href="https://launchpad.net/vpformysql" target="_blank">launchpad.net/vpformysql</a>
+----
+** 今日の話
+- ShardingだけじゃないVP & SPIDER<br/>(Not Only Sharding)
+- VP & SPIDERを運用ツールとして使う
+----
+** VPのデータコピー用UDF
+>||
+CREATE TABLE t1 (
+  a int(10) unsigned NOT NULL PRIMARY KEY,
+  b int(10) unsigned NOT NULL
+) ENGINE=MyISAM;
+
+SELECT * FROM t1;
++---+----+
+| a | b  |
++---+----+
+| 1 | 10 |
+| 2 | 20 |
+| 3 | 30 |
+| 4 | 40 |
++---+----+
+||<
+----
+** VPのデータコピー用UDF
+>||
+CREATE TABLE t2 (
+  a int(10) unsigned NOT NULL PRIMARY KEY,
+  b int(10) unsigned NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE t_vp (
+  a int(10) unsigned NOT NULL PRIMARY KEY,
+  b int(10) unsigned NOT NULL
+) ENGINE=VP CONNECTION 'zru "1", tnl "t1 t2"';
+
+SELECT vp_copy_tables('t_vp', 't1', 't2');
+||<
+----
+** SPIDERテーブルを作る
+>||
+CREATE TABLE t_spd (
+  a int(10) unsigned NOT NULL PRIMARY KEY,
+  b int(10) unsigned NOT NULL
+) ENGINE=SPIDER
+  CONNECTION 'host "db002.local", user "spider", tbl "t1"';
+||<
+----
+** VPとSPIDERを組み合わせる
+>||
+CREATE TABLE t_vp (
+  a int(10) unsigned NOT NULL PRIMARY KEY,
+  b int(10) unsigned NOT NULL
+) ENGINE=VP CONNECTION 'zru "1", tnl "t1 t_spd"';
+
+SELECT vp_copy_tables('t_vp', 't1', 't_spd');
+||<
+----
+** ホスト間テーブル移動ができる
+<small>
+- VPとSPIDERを使って任意のテーブルを別ホストに移行する
+- <a href="http://d.hatena.ne.jp/kamipo/20100909/1284052005" target="_blank">http://d.hatena.ne.jp/kamipo/20100909/1284052005</a>
+- さっきの手順をスクリプトにしますた
+----
+** スクリプト実行例
+>||
+$ mygrate_to --host new-db-host -u kamipo -d new_db table1
+
+CREATE TABLE `table1_new` LIKE `table1`;
+ALTER TABLE `table1_new` ENGINE SPIDER
+    CONNECTION 'host "new-db-host", user "kamipo", database "new_db", tbl "table1"';
+CREATE TABLE `table1_dummy` LIKE `table1`;
+CREATE TABLE `table1_vp` LIKE `table1`;
+ALTER TABLE `table1_vp` ENGINE VP
+    CONNECTION 'zru "1", tnl "table1_dummy table1_new"';
+RENAME TABLE
+    `table1_dummy` TO `table1_useless`,
+    `table1` TO `table1_dummy`,
+    `table1_vp` TO `table1`;
+SELECT vp_copy_tables('table1', 'table1_dummy', 'table1_new');
+RENAME TABLE
+    `table1` TO `table1_vp`,
+    `table1_new` TO `table1`;
+DROP TABLE `table1_dummy`, `table1_vp`, `table1_useless`;
+||<
+----
+** やってること
+- 移行先を参照するSPIDERテーブルを作る
+- VPで移行元テーブルとSPIDERを束ねる
+- vp_copy_tables()でデータコピー
+- SPIDERテーブルを残してVPと移行元テーブルを削除
+----
+** こういう構成で使う
+<img src="spider.png" />
+----
+** イメージ画像
+<img src="spider.png" width="50%" /><img src="spider.png" width="50%" />
+<img src="spider.png" width="50%" /><img src="spider.png" width="50%" />
+----
+** VPを使うときに気をつけたいこと
+- PRIMARY KEYがないとvp_copy_tables()は使えない
+----
+** SPIDERを使うときに気をつけたいこと
+- XAトランザクションサポートをOFFに(spider_support_xa=0)
+- データノードにはできるだけ最新のMySQL<br/>(5.1 >=)を使おう
+----
+** MySQL 5.0を使っていると…
+- いろんなクエリがエラー(になったりする)
+- REPLACE ~
+- INSERT ~ ON DUPLICATE KEY UPDATE ~
+- UPDATE ~ WHERE id = ?
+----
+** まとめ
+- ShardingだけじゃないVP & SPIDER<br/>(Not Only Sharding)
+- VP & SPIDERを運用ツールとして使う
+- VP & SPIDERでテーブルを<br/>理解・分解・再構築
+----
+** おわり
+* ご清聴ありがとうございました。
