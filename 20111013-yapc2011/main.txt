@@ -198,7 +198,7 @@ SELECT * FROM tweets
 SELECT * FROM tweets
     FORCE INDEX (PRIMARY)
     WHERE id <= 100000000
-    ORDER BY id DESC;
+    ORDER BY id DESC LIMIT 9;
 ||<
 大きなOFFSETをWHEREに書き替える
 ----
