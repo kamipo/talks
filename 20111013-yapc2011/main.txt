@@ -1,0 +1,318 @@
+** YAPC::Asia Tokyo 2011 RejectConf
+----
+** YAPC::Asia Tokyo 2011 RejectConf
+* 本当は難しい<br/>フレンド・タイムライン処理
+<center>
+2011/10/13
+<img src="kamipo_normal.png" /><a href="http://twitter.com/kamipo" target="_blank">@kamipo</a>
+</center>
+----
+** 自己紹介
+- <img src="kamipo_normal.png" />kamipo
+- pixiv Inc.
+- 運用エンジニア
+----
+** 今日話すこと
+MySQL(RDBMS)で
+フレンド・タイムライン処理を
+実現するうえでのいろいろな問題の
+いろいろな対策について話します
+----
+** フレンド・タイムライン処理とは
+TwitterやFacebookのニュースフィードのような
+友人の投稿を時系列に並べて表示する処理
+----
+** フレンド・タイムライン処理とは
+- pixivのフレンド・タイムライン
+-- お気に入り新着
+-- マイピク新着
+-- staccfeed
+----
+** フレンド・タイムライン処理とは
+最新の投稿をすばやく表示したい
+ひとりひとり表示される内容が異なるので
+効率よくキャッシュしにくい
+----
+** 素直な実装例
+>||
+ -- フォロワー関係を保持するテーブル
+CREATE TABLE `followers` (
+  `user_id` int(10) unsigned NOT NULL,
+  `follower_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`user_id`,`follower_id`),
+  KEY `follower_id` (`follower_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ -- ツイートを保持するテーブル
+CREATE TABLE `tweets` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `body` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+||<
+----
+** 素直な実装例
+>||
+# タイムラインの1ページ目(20件)を取得する処理
+
+my $user_id = $session->get('user_id');
+
+my @following =
+            SELECT follower_id FROM followers
+                WHERE user_id = $user_id;
+
+my @timeline =
+            SELECT id, user_id, body FROM tweets
+                WHERE user_id IN ( @following )
+                ORDER BY id DESC LIMIT 20;
+||<
+----
+** イケてないところ
+>||
+SELECT id, user_id, body FROM tweets
+    FORCE INDEX (user_id)
+    WHERE user_id IN ( @following )
+    ORDER BY id DESC LIMIT 20;
+||<
+user_idのインデックスを使う場合
+とあるユーザが1000人フォローしていて
+一人あたり平均5000ツイートしていると
+----
+** イケてないところ
+>||
+SELECT id, user_id, body FROM tweets
+    FORCE INDEX (user_id)
+    WHERE user_id IN ( @following )
+    ORDER BY id DESC LIMIT 20;
+||<
+まずuser_idをキーにして
+1000x5000件まで絞り込んだあと
+idの降順に並び替えて
+先頭から20件を返す
+----
+** 500万件のファイルソート
+こんなんばっかりやってると死ぬ
+----
+** 1億レコードぐらいあるテーブルでの結果
+>||
+SELECT id, user_id, body FROM tweets
+    FORCE INDEX (user_id)
+    WHERE user_id IN ( @following )
+    ORDER BY id DESC LIMIT 20;
+||<
+>||
+0.01446s if @following == 100
+0.09727s if @following == 500
+0.31666s if @following == 1000
+||<
+フォロー数が多いと遅くなる
+----
+** なにがイケてないか
+ひとりあたりのフォロー数が多い
+ひとりあたりのツイート数も多い
+インデックスを引いても絞り込めてない
+----
+** 別のインデックスを使ってみる
+ふつうは数を絞り込む方法を考えるけど
+数が絞り込めてないときに
+有利になる方法をひとつ紹介
+----
+** ソートに使うインデックスを使う
+>||
+SELECT id, user_id, body FROM tweets
+    FORCE INDEX (PRIMARY)
+    WHERE user_id IN ( @following )
+    ORDER BY id DESC LIMIT 20;
+||<
+PRIMARYキーからidの降順に
+user_idが@followingなレコードを
+20件返せるまで続ける
+----
+** ソートに使うインデックスを使う
+>||
+SELECT id, user_id, body FROM tweets
+    FORCE INDEX (PRIMARY)
+    WHERE user_id IN ( @following )
+    ORDER BY id DESC LIMIT 20;
+||<
+>||
+0.11566s if @following == 100
+0.02523s if @following == 500
+0.01025s if @following == 1000
+||<
+フォロー数が多いと速くなる
+----
+** インデックス毎の比較
+>||
+SELECT tweets FORCE INDEX (user_id)
+0.01446s if @following == 100
+0.09727s if @following == 500
+0.31666s if @following == 1000
+
+SELECT tweets FORCE INDEX (PRIMARY)
+0.11566s if @following == 100
+0.02523s if @following == 500
+0.01025s if @following == 1000
+||<
+----
+** インデックス毎の比較
+フォロー数が少ないとき
+>||
+SELECT tweets FORCE INDEX (user_id)
+||<
+フォロー数が多いとき
+>||
+SELECT tweets FORCE INDEX (PRIMARY)
+||<
+----
+** 後ろのほうのページはヤバイ
+>||
+SELECT * FROM tweets
+    FORCE INDEX (PRIMARY)
+    ORDER BY id DESC LIMIT 9 OFFSET 8999991;
+
+Query_time: 256.454929
+||<
+----
+** 後ろのほうのページはヤバイ
+ページャのクエリで大きなOFFSETがつきがち
+OFFSETが大きなクエリはすごく遅くなる
+----
+** 後ろのほうのページはヤバイ
+件数が多い機能の場合はよく考えよう
+ページ数を制限する
+真ん中より後ろはASCで検索して逆順表示
+もっと見る等
+----
+** もっと見るの場合
+>||
+ -- 999999ページ
+SELECT * FROM tweets
+    FORCE INDEX (PRIMARY)
+    ORDER BY id DESC LIMIT 9 OFFSET 8999991;
+||<
+>||
+ -- もっと見る
+SELECT * FROM tweets
+    FORCE INDEX (PRIMARY)
+    WHERE id <= 100000000
+    ORDER BY id DESC;
+||<
+大きなOFFSETをWHEREに書き替える
+----
+** 絞り込むことを考える
+ひとりあたりのフォロー数が多い
+- 10万人以上フォローしてる人もいる
+ひとりあたりのツイート数が多い
+- 数万件以上ツイートしてる人もざら
+----
+** フォローしてる人を絞り込む
+1ページ目(20件)だけを考えると
+フォローしてる人の中で
+最近投稿した20人がわかればいい
+----
+** フォローしてる人を絞り込む
+>||
+ -- フォローしてる人全員
+SELECT follower_id FROM followers
+    WHERE user_id = $user_id;
+
+ -- フォローしてる人で最近投稿した20人
+SELECT follower_id, (
+      SELECT id FROM tweets
+        WHERE user_id = followers.follower_id
+        ORDER BY user_id DESC, id DESC LIMIT 1) AS max_id
+    FROM followers
+    WHERE user_id = $user_id
+    ORDER BY max_id DESC LIMIT 20
+||<
+----
+** 評価されるツイート数を絞り込む
+1ページ目(20件)だけを考えると
+フォローしてる人ひとりあたり
+最近投稿したツイート20件だけ欲しい
+----
+** 評価されるツイート数を絞り込む
+>||
+ -- ひとりあたり全ツイートを評価
+SELECT id, user_id, body FROM tweets
+    WHERE user_id IN ( @following )
+    ORDER BY id DESC LIMIT 20;
+
+ -- ひとりあたり最近投稿した20件を評価
+ -- 下記参照
+||<
+<small>
+<a href="http://d.hatena.ne.jp/kazuhooku/20080609/1213030182" target="_blank">タイムライン取得処理 (プル型) をがんばって１ステートメントで書いてみる話</a>
+</small>
+----
+** 詳しくはコチラ
+奥一穂さんが詳しく書かれています
+<small>
+<a href="http://labs.cybozu.co.jp/blog/kazuho/archives/2008/06/friends_timeline.php" target="_blank">フレンド・タイムライン処理の原理と実践</a>
+<a href="http://labs.cybozu.co.jp/blog/kazuho/archives/2008/06/mysql_direct_access.php" target="_blank">MySQL (InnoDB) に直接アクセスしてタイムライン処理を高速化する話</a>
+</small>
+プッシュ型、プル型、UDF
+それぞれの原理の説明と性能評価を行われています
+----
+** UDFでフレンド・タイムライン処理
+SQLのオーバーヘッドを受けず
+SQLより自由なアクセスを実現できる
+
+pixivのスタックフィードでは
+タイムライン処理をUDFで実装している
+----
+** UDFでの性能
+>||
+SELECT timeline()
+0.00100s if @following == 100
+0.00366s if @following == 500
+0.00670s if @following == 1000
+
+SELECT tweets FORCE INDEX (user_id)
+0.01446s if @following == 100
+0.09727s if @following == 500
+0.31666s if @following == 1000
+||<
+----
+** UDFでの性能
+>||
+SELECT timeline()
+0.00100s if @following == 100
+0.00366s if @following == 500
+0.00670s if @following == 1000
+
+SELECT tweets FORCE INDEX (PRIMARY)
+0.11566s if @following == 100
+0.02523s if @following == 500
+0.01025s if @following == 1000
+||<
+----
+** どういうときにUDFを使うか
+SQLだと意図したアクセスが困難な
+複雑なクエリで性能を出したいときはアリかも
+
+単純なクエリでSQL以上の性能を出したいなら
+今はHandlerSocketがある
+----
+** MySQLが進化するとUDF使わないで済むかも
+<img src="mysql5.6-limit.png" />
+<small>
+<a href="https://twitter.com/#!/RKajiyama/status/120952094135033856" target="_blank">https://twitter.com/#!/RKajiyama/status/120952094135033856</a>
+</small>
+----
+** MySQLが進化するとUDF使わないで済むかも
+<img src="mysql5.6-subquery.png" />
+<small>
+<a href="https://twitter.com/#!/RKajiyama/status/120953725190811648" target="_blank">https://twitter.com/#!/RKajiyama/status/120953725190811648</a>
+</small>
+----
+** まとめ
+フレンド・タイムライン処理を
+実現するうえでのいろいろな問題の
+いろいろな対策について話しました
+----
+** おしまい
+* ご清聴ありがとうございました
