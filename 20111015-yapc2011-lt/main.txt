@@ -1,0 +1,96 @@
+** YAPC::Asia Tokyo 2011 LT
+----
+** YAPC::Asia Tokyo 2011 LT
+* MySQLで<br />MessagePackの中身を検索
+<center>
+2011/10/15
+<img src="kamipo_normal.png" /><a href="http://twitter.com/kamipo" target="_blank">@kamipo</a>
+</center>
+----
+** What's MessagePack?
+速くて(fast)
+空間効率の良い(compact)
+ポータブルな(portable)
+永続化フォーマット(serialization format)
+----
+** 速い(fast)
+serialize
+>||
+json　　　141940/s
+msgpack　355501/s
+||<
+----
+** 速い(fast)
+deserialize
+>||
+json　　　179443/s
+msgpack　212910/s
+||<
+----
+** 空間効率が良い(compact)
+>||
+say length(JSON::XS::encode_json({a=>1, b=>2}));
+# => 13
+||<
+>||
+say length(Data::MessagePack->pack({a=>1, b=>2}));
+# => 7
+||<
+----
+** 欠点(demerit)
+人間が読めない(not human readable)
+>||
+say JSON::XS::encode_json({a=>1, b=>2});
+# => {"a":1,"b":2}
+||<
+>||
+say Data::MessagePack->pack({a=>1, b=>2});
+# => ��a�b
+||<
+----
+** JSONを検索したい
+>||
+12:26:24 <kazuh○> SELECT * FROM t WHERE json_lookup(hash_fld,"key")="value";
+12:26:32 <kazuh○> とか書けるとうれしいことがあるのかなーみたいな
+12:36:55 <ch○45> json 検索できるのほしい
+12:37:05 <ch○45> あと MessagePack 検索できるのもほしい
+12:37:10 <ch○45> よくばりや〜
+13:11:06 >kamipo< json_lookup便利や！
+13:12:21 <yapp○39> kazuh○++
+13:12:26 >kamipo< kazuh○++
+||<
+----
+** json_get UDF (by kazuho)
+数時間後にもうできてた！
+<a href="https://github.com/kazuho/mysql_json" target="_blank">https://github.com/kazuho/mysql_json</a>
+>||
+SELECT json_get('{"a":1}', 'a')       => 1
+SELECT json_get('{"a":1}', 'b')       => NULL
+SELECT json_get('[1,2,3]', 2)         => 3
+SELECT json_get('{"a":[2]}', 'a', 0)  => 2
+||<
+----
+** MessagePackを検索したい
+>||
+13:14:45 >kamipo< msgpackでシリアライズしたデータを自分の目で読む能力がないから
+13:14:45 >kamipo< SELECT id, msgpack2json(data) FROM table; あるといいなと思ってた。
+13:14:58 <yapp○39> kamipo++
+13:15:01 <kazuh○> kamipo++
+13:15:09 <appxx> kamipo++
+13:15:14 <riyw○_> kamipo++
+13:15:19 <zent○○○> kamipo++
+||<
+----
+** msgpack_get UDF (by kamipo)
+つくりました
+<a href="https://github.com/kamipo/mysql_msgpack" target="_blank">https://github.com/kamipo/mysql_msgpack</a>
+>||
+SELECT msgpack_get('��a�b', 'a') => 1
+SELECT msgpack_get('��a�b', 'b') => 2
+||<
+----
+** 実演
+* Demo
+----
+** おしまい
+* Enjoy!!
