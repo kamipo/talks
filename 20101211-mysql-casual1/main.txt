@@ -1,6 +1,4 @@
 ** MySQL Casual Talks vol.1
-----
-** MySQL Casual Talks vol.1
 * MySQL::Sandboxとか(仮)
 <center>
 2010/12/11

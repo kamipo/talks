@@ -1,6 +1,4 @@
 ** YAPC::Asia Tokyo 2011 LT
-----
-** YAPC::Asia Tokyo 2011 LT
 * MySQLで<br />MessagePackの中身を検索
 <center>
 2011/10/15

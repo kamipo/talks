@@ -1,6 +1,4 @@
 ** YAPC::Asia Tokyo 2011 RejectConf
-----
-** YAPC::Asia Tokyo 2011 RejectConf
 * 本当は難しい<br/>フレンド・タイムライン処理
 <center>
 2011/10/13
