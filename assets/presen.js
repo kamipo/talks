@@ -53,7 +53,7 @@ Presen.init_sections = function () {
 
 Presen.init_title = function () {
     var titles = this.sections[0];
-    document.title = titles[0];
+    // document.title = titles[0];
     $("#title").html(titles[0]);
 };
 
@@ -228,7 +228,7 @@ $(function (){
         } catch(e) {
             alert(e) 
         }
-    });
+    }, "text");
 
     Presen.observe_key_event();
 });
