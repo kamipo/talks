@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>AKBとmysql-buildの話</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css" rel="stylesheet" />
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div id="title" class="step" data-y="0" data-x="0">
+<h1>AKBとmysql-buildの話</h1>
+
+<p>2012/04/19<br/>
+MySQL Casual Talks Vol.3<br/>
+<address>
+<a href="http://twitter.com/kamipo" target="_blank">@kamipo</a><br/>
+<a href="https://github.com/kamipo" target="_blank">github/kamipo</a>
+</address></p>
+
+</div>
+<div class="step" data-y="0" data-x="1200">
+<h2>AKBの話(бвб)</h2>
+
+</div>
+<div class="step" data-y="0" data-x="2400">
+<h2>(бвб)</h2>
+
+<p><a href="http://twitter.com/kojiharunyan" target="_blank">@kojiharunyan</a></p>
+
+</div>
+<div class="step" data-y="0" data-x="3600">
+<h2>今日4/19はにゃんにゃん(бвб)の24歳の誕生日です！</h2>
+
+<p>涙サプライズ！です！！</p>
+
+</div>
+<div class="step" data-y="0" data-x="4800">
+<h2>Haruna storage engine</h2>
+
+<p>仕事中でもターミナルに集中しながらこじはるのツイートをチェックできる
+陽菜ストレージエンジンというのを作りました！</p>
+
+</div>
+<div class="step" data-y="800" data-x="0">
+<h2>(бвб)</h2>
+
+<pre><code>INSTALL PLUGIN haruna SONAME 'ha_haruna.so';
+</code></pre>
+
+</div>
+<div class="step" data-y="800" data-x="1200">
+<h2>( *｀ω´)</h2>
+
+<p><a href="http://twitter.com/mariko_dayo" target="_blank">@mariko_dayo</a></p>
+
+</div>
+<div class="step" data-y="800" data-x="2400">
+<h2>( *｀ω´)八(бвб)</h2>
+
+<p>はるにゃんとラブラブの麻里子様のツイートもいっしょにチェックできる機能も搭載してます！</p>
+
+</div>
+<div class="step" data-y="800" data-x="3600">
+<h2>( *｀ω´)八(бвб)</h2>
+
+<pre><code>mariko_dayo ♥ kojiharunyan
+</code></pre>
+
+</div>
+<div class="step" data-y="800" data-x="4800">
+<h2>( *｀ω´)八(бвб)</h2>
+
+<pre><code>CREATE TABLE mariko_dayo LIKE kojiharunyan;
+</code></pre>
+
+</div>
+<div class="step" data-y="1600" data-x="0">
+<h2>( *｀ω´)AKBおしまい(бвб)</h2>
+
+</div>
+<div class="step" data-y="1600" data-x="1200">
+<h2>mysql-buildの話</h2>
+
+</div>
+<div class="step" data-y="1600" data-x="2400">
+<h2>最近いろいろMySQLが出てましたね</h2>
+
+<ul>
+<li><p>MySQL 5.6.5 (5.6.5-m8)</p></li>
+<li><p>MySQL 5.6.6 (5.6.6-labs-april-2012)</p></li>
+<li><p>MariaDB 5.5 (5.5.23)</p></li>
+<li><p>Twitter MySQL 5.5 (5.5.19-t2)</p></li>
+</ul>
+
+</div>
+<div class="step" data-y="1600" data-x="3600">
+<h2>こういうことしたい</h2>
+
+<p>サービスの本番に突っ込む用とかじゃなくて自分のローカルにMySQLを入れたいんだけど
+ディストリビューションのパッケージ管理システムとかだと複数のバージョンのMySQL扱ってないとかで面倒だし
+ちょっと試しでこの前でた新しいバージョンのMySQLを入れたいんだけど
+まだ安定版じゃないやつだと手元にソースコードも置いておきたいですよね</p>
+
+</div>
+<div class="step" data-y="1600" data-x="4800">
+<h2>それmysql-buildでできるよ</h2>
+
+<p>というのを目指しています</p>
+
+</div>
+<div class="step" data-y="2400" data-x="0">
+<h2>mysql-build</h2>
+
+<pre><code>git clone git://github.com/kamipo/mysql-build.git
+export PATH="$HOME/mysql-build/bin:$PATH"
+</code></pre>
+
+</div>
+<div class="step" data-y="2400" data-x="1200">
+<h2>mysql-build --definitions</h2>
+
+<pre><code>3.23.58
+4.0.30
+4.1.25
+5.0.95
+5.1.59
+5.5.14-spider-2.28
+5.5.18
+5.6.5-m8
+5.6.6-labs-april-2012
+mariadb-5.5.23
+twitter-5.5.19.t2
+</code></pre>
+
+</div>
+<div class="step" data-y="2400" data-x="2400">
+<h2>mysql-build</h2>
+
+<pre><code>mkdir -p ~/opt/mysql
+mysql-build -v 5.6.5-m8 ~/opt/mysql/5.6.5-m8
+</code></pre>
+
+</div>
+<div class="step" data-y="2400" data-x="3600">
+<h2>mysql-build</h2>
+
+<pre><code>cd ~/opt/mysql/5.6.5-m8
+./scripts/mysql_install_db
+./bin/mysqld_safe &amp;
+</code></pre>
+
+</div>
+<div class="step" data-y="2400" data-x="4800">
+<h2>簡単ですね</h2>
+
+</div>
+<div class="step" data-y="3200" data-x="0">
+<h2>いとも</h2>
+
+<pre><code>mysql-build -v 5.6.6-labs-april-2012 ~/opt/mysql/5.6.6-labs-april-2012
+</code></pre>
+
+</div>
+<div class="step" data-y="3200" data-x="1200">
+<h2>たやすく</h2>
+
+<pre><code>mysql-build -v mariadb-5.5.23 ~/opt/mysql/mariadb-5.5.23
+</code></pre>
+
+</div>
+<div class="step" data-y="3200" data-x="2400">
+<h2>インストールできます！</h2>
+
+<pre><code>mysql-build -v twitter-5.5.19.t2 ~/opt/mysql/twitter-5.5.19.t2
+</code></pre>
+
+</div>
+<div class="step" data-y="3200" data-x="3600">
+<h2>カジュアルにいろいろなMySQLを試してみましょう！</h2>
+
+</div>
+<div class="step" data-y="3200" data-x="4800">
+<h2>おしまい</h2>
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script src="js/impress.js"></script>
+
+</body>
+</html>
+
