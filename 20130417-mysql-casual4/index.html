@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>SQLがむずかしくて生きるのがつらい</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css" rel="stylesheet" />
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div id="title" class="step" data-y="0" data-x="0">
+<h1>SQLがむずかしくて生きるのがつらい</h1>
+
+<p>2013/04/17<br/>
+MySQL Casual Talks Vol.4<br/>
+<address>
+<a href="http://twitter.com/kamipo" target="_blank">@kamipo</a><br/>
+<a href="https://github.com/kamipo" target="_blank">github/kamipo</a>
+</address></p>
+
+</div>
+<div class="step" data-y="0" data-x="1200">
+<h2>むずかしいと思うところ</h2>
+
+<p>ウェブアプリケーションの場合</p>
+
+</div>
+<div class="step" data-y="0" data-x="2400">
+<h2>むずかしいと思うところ</h2>
+
+<p>当初の見込みに反してサービスが大ヒットしたり
+長いこと運用することになったサービスだと
+データがめっちゃ増えてて検索の絞り込みが効かなくなっていく(遅くなっていく)</p>
+
+</div>
+<div class="step" data-y="0" data-x="3600">
+<h2>　</h2>
+
+<ul>
+<li>そもそもインデックスから引いても絞り込めない
+<ul>
+<li>MySQL内部では絞り込みにLIMITはほぼ使われない</li>
+</ul></li>
+<li>これまで設計でカバーしてきた
+<ul>
+<li>mailbox方式</li>
+<li>recent db</li>
+<li>時系列sharding</li>
+</ul></li>
+</ul>
+
+</div>
+<div class="step" data-y="0" data-x="4800">
+<h2>生きるのがつらいところ</h2>
+
+</div>
+<div class="step" data-y="800" data-x="0">
+<ul>
+<li>絞り込む方法が物理的に存在しないわけではない</li>
+<li>SQLで絞り込めないのはSQLの制約</li>
+</ul>
+
+</div>
+<div class="step" data-y="800" data-x="1200">
+<h2>こういうふうにしていた</h2>
+
+<p>MySQLのHandler APIを直に叩くUDFを書けば
+SQLではうまく絞り込めなくて無駄な行に触ってしまう検索を
+可能な限り必要な行だけ取ってくることでSQLとくらべて
+数倍から数十倍効率よく検索できてうれしい。</p>
+
+</div>
+<div class="step" data-y="800" data-x="2400">
+<h2>こういうふうにしていた</h2>
+
+<p>UDFでHandler APIを叩いて複数行取ってきても
+普通のやり方ではUDFは1つの値しか返せない。
+kazuhoさん方式ではUDF内でテンポラリテーブルにINSERTしていて
+pixiv方式ではJSONにシリアライズして1つの値として返して
+アプリケーション側でデシリアライズしていた。</p>
+
+</div>
+<div class="step" data-y="800" data-x="3600">
+<h2>複数行取ってきてるんだからそのまま複数行で返したい</h2>
+
+</div>
+<div class="step" data-y="800" data-x="4800">
+<h2>ストレージエンジンを書けば複数行返せる</h2>
+
+</div>
+<div class="step" data-y="1600" data-x="0">
+<h2>mruby_storage_engine</h2>
+
+<p>ストレージエンジンの処理をmrubyで書けるやつを作った<br/>
+<a href="https://github.com/kamipo/mruby_storage_engine" target="_blank">https://github.com/kamipo/mruby_storage_engine</a></p>
+
+</div>
+<div class="step" data-y="1600" data-x="1200">
+<h2>ストレージエンジンの処理を書けてうれしいこと</h2>
+
+<ul>
+<li>SQLにはできない絞り込みかたができたり</li>
+<li>隣接リストモデルのツリーを再帰的に辿れたり</li>
+<li>JSONのkey/valueをカラムに展開しながら検索できたり</li>
+</ul>
+
+</div>
+<div class="step" data-y="1600" data-x="2400">
+<h2>example (JSON parse)</h2>
+
+<pre><code>CREATE TABLE t (
+  user_id int,
+  status_id int,
+  data varchar(255)
+) ENGINE=MRUBY
+  COMMENT=' # mruby handler
+  def json_get(json, key)
+    json = JSON.parse(json)
+    json[key]
+  end
+  ';
+</code></pre>
+
+</div>
+<div class="step" data-y="1600" data-x="3600">
+<h2>さいごに</h2>
+
+</div>
+<div class="step" data-y="1600" data-x="4800">
+<h2>SQLを勉強しましょう</h2>
+
+</div>
+<div class="step" data-y="2400" data-x="0">
+<h2>おしまい</h2>
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script src="js/impress.js"></script>
+
+</body>
+</html>
+
