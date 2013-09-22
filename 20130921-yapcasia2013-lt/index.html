@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>mysql-buildでQ4Mやmroongaもビルドしたい</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css" rel="stylesheet" />
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div data-y="0" class="step" data-x="0" id="title">
+<h1>mysql-buildでQ4Mやmroongaもビルドしたい</h1>
+
+<p>2013/09/21<br/>
+YAPC::Asia Tokyo 2013 LT<br/>
+<address>
+<a href="http://twitter.com/kamipo" target="_blank">@kamipo</a><br/>
+<a href="https://github.com/kamipo" target="_blank">github/kamipo</a>
+</address></p>
+
+</div>
+<div data-x="1200" class="step" data-y="0">
+<h2>Q4M</h2>
+
+<p><a href="http://blog.nomadscafe.jp/2011/12/q4m---mysql-casual-advent-calendar-2011.html" target="_blank">MySQL Casual Advent Calendar 2011 (kazeburoさん)</a></p>
+
+<pre><code>最近livedoorからオープンソース化された3億ファイルを管理してるオブジェクトストレージ「STF」でも使ってるMessage QueueのQ4Mのインストール方法を紹介するよ！
+知ってる人も多いと思うけどQ4Mはkazuhoさんによって開発されたMySQLのストレージエンジンとして実装されてるMessage Queue。livedoorではもちろん、mixiやDeNAをはじめソーシャルゲーム各社でも使われている。
+</code></pre>
+
+</div>
+<div class="step" data-x="2400" data-y="0">
+<h2>Q4M</h2>
+
+<p><a href="http://blog.livedoor.jp/xaicron/archives/53380670.html" target="_blank">MySQL Casual Advent Calendar 2011 (xaicronさん)</a></p>
+
+<pre><code>仕事で Q4M とか HandlerSocket とか使う機会があります。
+更に言うと、手元の Mac の環境でそれらを手軽に使いたいので、簡単にセットアップが出来ると嬉しいですね。
+</code></pre>
+
+</div>
+<div class="step" data-x="3600" data-y="0">
+<h2>mroonga</h2>
+
+<p><a href="http://atnd.org/events/43461" target="_blank">全文検索エンジンgroongaを囲む夕べ 4</a></p>
+
+</div>
+<div data-y="0" class="step" data-x="4800">
+<h2>mysql-build</h2>
+
+<p><a href="https://github.com/kamipo/mysql-build/tree/feature/plugin" target="_blank">mysql-build (feature/plugin)</a></p>
+
+</div>
+<div data-x="0" class="step" data-y="800">
+<h2>mysql-build</h2>
+
+<pre><code>$ mysql-build --help
+mysql-build, Compile and Install MySQL
+usage: mysql-build [-v|--verbose] [--with-debug] definition prefix [plugin[,...]]
+       mysql-build --definitions
+       mysql-build --plugins
+
+  -v/--verbose     Verbose mode: print compilation status to stdout
+  --with-debug     Debug build
+  --definitions    List all built-in definitions
+  --plugins        List all built-in plugins
+</code></pre>
+
+</div>
+<div class="step" data-x="1200" data-y="800">
+<h2>mysql-build</h2>
+
+<pre><code>$ mysql-build --definitions
+3.23.58
+4.0.30
+4.1.25
+5.0.95
+5.1.68
+5.1.69
+(snip)
+5.5.33
+5.5.34
+5.6.10
+5.6.11
+5.6.12
+5.6.13
+5.6.14
+5.7.1-m11
+(snip)
+</code></pre>
+
+</div>
+<div class="step" data-x="2400" data-y="800">
+<h2>mysql-build</h2>
+
+<pre><code>$ mysql-build --plugins
+mroonga-3.07
+q4m-0.9.10
+</code></pre>
+
+</div>
+<div data-x="3600" class="step" data-y="800">
+<h2>mysql-build</h2>
+
+<pre><code>$ mysql-build --verbose --with-debug \
+                5.6.14 ~/opt/mysql/5.6.14-yapcasia \
+                q4m-0.9.10,mroonga-3.07
+Downloading http://cdn.mysql.com/Downloads/MySQL-5.6/mysql-5.6.14.tar.gz...
+(snip)
+</code></pre>
+
+</div>
+<div data-y="800" class="step" data-x="4800">
+<h2>みんなMySQLのプラグインもつかってくれるかな？</h2>
+
+</div>
+<div data-y="1600" class="step" data-x="0">
+<h2>Thanks!!</h2>
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script src="js/impress.js"></script>
+
+</body>
+</html>
+
