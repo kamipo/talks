@@ -1,0 +1,341 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MySQLとActiveRecord</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css" rel="stylesheet" />
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div data-y="0" class="step" data-x="0" id="title">
+<h1>MySQLとActiveRecord</h1>
+
+<p>2014/11/10<br/>
+Rails複数DB Casual Talks<br/>
+<address>
+<a href="https://twitter.com/kamipo" target="_blank">@kamipo</a><br/>
+<a href="https://github.com/kamipo" target="_blank">github/kamipo</a>
+</address></p>
+
+</div>
+<div data-x="1200" data-y="0" class="step">
+<h2>About me</h2>
+
+<ul>
+<li><a href="https://twitter.com/kamipo" target="_blank">twitter/kamipo</a></li>
+<li><a href="https://github.com/kamipo" target="_blank">github/kamipo</a></li>
+<li><a href="http://qiita.com/kamipo" target="_blank">qiita/kamipo</a></li>
+<li><a href="http://blog.kamipo.net/" target="_blank">かみぽわーる</a></li>
+</ul>
+
+</div>
+<div data-y="0" class="step" data-x="2400">
+<h2>About me</h2>
+
+<ul>
+<li>クソクエリの話題にクソリプ業
+<ul>
+<li><a href="http://togetter.com/li/564015" target="_blank">ORDER BY 狙いのキーの話</a></li>
+<li><a href="http://togetter.com/li/579823" target="_blank">ORDER BY 狙いのキーの話2</a></li>
+<li><a href="http://togetter.com/li/640847" target="_blank">2014年なんだからCOUNT(*)とかSQL_CALC_FOUND_ROWSとかLIMIT OFFSET以下略</a></li>
+</ul></li>
+<li>MySQL Casual
+<ul>
+<li><a href="http://kamipo.github.io/talks/20140711-mysqlcasual6/" target="_blank">ふつうのWeb開発者のためのクエリチューニング</a></li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="3600" data-y="0" class="step">
+<h2>MySQL Casual</h2>
+
+<ul>
+<li>次回のMySQL Casualは12月12日(金)開催です
+<ul>
+<li><a href="http://mysql-casual.connpass.com/event/9767/" target="_blank">MySQL Casual Talks vol.7</a></li>
+</ul></li>
+<li>今年もAdvent Calendarあります
+<ul>
+<li><a href="http://qiita.com/advent-calendar/2014/mysql-casual" target="_blank">MySQL Casual Advent Calendar 2014</a></li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="4800" data-y="0" class="step">
+<h2>今日話す話題</h2>
+
+<ul>
+<li>ActiveRecordのMySQL対応は放置される傾向にある
+<ul>
+<li>でもMySQL対応がんばりたい</li>
+<li>(みんなもMySQL使ってますよね？)</li>
+</ul></li>
+<li>ActiveRecordからMySQLを使うときのハマりどころ</li>
+</ul>
+
+</div>
+<div data-x="0" class="step" data-y="800">
+<h2>ActiveRecordのMySQL対応は放置される傾向にある</h2>
+
+<ul>
+<li><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></li>
+<li>a_matsudaさんがゲストの回でActiveRecordのMySQL対応について言及されてる</li>
+</ul>
+
+</div>
+<div class="step" data-y="800" data-x="1200">
+<h2><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></h2>
+
+<pre><code>miyagawa「MySQLのdatetimeでmicrosecondサポートするやつマージされるのに1年半ぐらいかかった」
+</code></pre>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/8240" target="_blank">MySQL 5.6 and later supports microsecond precision in datetime. #8240</a></li>
+</ul>
+
+</div>
+<div data-x="2400" data-y="800" class="step">
+<h2><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></h2>
+
+<pre><code>a_matsuda「ARメンテしてる人が全員ポスグレ派でMySQL使ってる人がたぶん誰もいない」
+</code></pre>
+
+</div>
+<div data-y="800" class="step" data-x="3600">
+<h2><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></h2>
+
+<pre><code>a_matsuda「MySQLまわりのパッチはめっちゃ放置される傾向にあります」
+</code></pre>
+
+</div>
+<div data-x="4800" data-y="800" class="step">
+<h2>ActiveRecordのMySQL対応は放置される傾向にある</h2>
+
+<ul>
+<li>メンテナが全員ポスグレ派なので使ってる人が問題を上げていくしかない</li>
+<li>MySQL使ってる人たちが問題を上げていかないと解決されないままになる</li>
+</ul>
+
+</div>
+<div data-x="0" data-y="1600" class="step">
+<h2>このへん対応されてほしい</h2>
+
+<ul>
+<li>テーブルオプションをschema.rbにダンプする
+<ul>
+<li><a href="https://github.com/rails/rails/pull/17569" target="_blank">#17569</a></li>
+</ul></li>
+<li>カラムにcharsetとcollationを指定できるようにする
+<ul>
+<li><a href="https://github.com/rails/rails/pull/17574" target="_blank">#17574</a></li>
+</ul></li>
+<li>utf8mb4以外のunicode対応
+<ul>
+<li><a href="https://github.com/rails/rails/pull/17601" target="_blank">#17601</a></li>
+</ul></li>
+<li>primary_keyに任意の型を指定できるようにする
+<ul>
+<li><a href="https://github.com/rails/rails/pull/17631" target="_blank">#17631</a></li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="1200" data-y="1600" class="step">
+<h2>ActiveRecordからMySQLを使うときのハマりどころ</h2>
+
+<ul>
+<li>strict_mode</li>
+<li>utf8mb4</li>
+<li>validates :uniquenessのBINARY</li>
+<li>utf8_unicode_ci</li>
+<li>unsigned int</li>
+</ul>
+
+</div>
+<div data-y="1600" class="step" data-x="2400">
+<h2>strict_mode</h2>
+
+<ul>
+<li><a href="http://qiita.com/kamipo/items/2ce1d668afbb3d2afd86" target="_blank">ActiveRecordでstrict_modeを無効にする</a></li>
+<li>接続時に<code>sql_mode = STRICT_ALL_TABLES</code>をセットする
+<ul>
+<li>rails 4.0から導入されデフォルトで有効</li>
+</ul></li>
+<li>MySQL側での設定を上書きされたくないので無効にしたい
+<ul>
+<li>database.ymlで<code>strict: false</code>を設定すると無効にできた</li>
+</ul></li>
+<li>rails 4.2.0(beta)で<code>strict: false</code>の挙動が変更された
+<ul>
+<li><code>sql_mode = ''</code>をセットするようになった</li>
+<li><a href="https://github.com/rails/rails/issues/17370" target="_blank">#17370</a></li>
+</ul></li>
+</ul>
+
+</div>
+<div class="step" data-y="1600" data-x="3600">
+<h2>strict_mode</h2>
+
+<ul>
+<li>rails 4.2.0(beta)でもstrict_modeを無効にする方法</li>
+</ul>
+
+<pre><code># database.yml
+production:
+  adapter: mysql2
+  database: foo_prod
+  user: foo
+  variables:
+    sql_mode: :default
+</code></pre>
+
+</div>
+<div class="step" data-y="1600" data-x="4800">
+<h2>utf8mb4</h2>
+
+<ul>
+<li><a href="http://qiita.com/kamipo/items/101aaf8159cf1470d823" target="_blank">ActiveRecordをutf8mb4で動かす</a>
+<ul>
+<li>stringのデフォルトを<code>limit: 191</code>にする</li>
+<li>rails 4.1以降を使う</li>
+<li>innodb_large_prefixを使う</li>
+</ul></li>
+</ul>
+
+</div>
+<div class="step" data-y="2400" data-x="0">
+<h2>utf8mb4</h2>
+
+<ul>
+<li>stringのデフォルトを<code>limit: 191</code>にする</li>
+</ul>
+
+</div>
+<div data-x="1200" class="step" data-y="2400">
+<h2>utf8mb4</h2>
+
+<pre><code>module ActiveRecord
+  module ConnectionAdapters
+    class AbstractMysqlAdapter
+      NATIVE_DATABASE_TYPES[:string][:limit] = 191
+    end
+  end
+end
+</code></pre>
+
+</div>
+<div data-x="2400" data-y="2400" class="step">
+<h2>utf8mb4</h2>
+
+<ul>
+<li>rails 4.1以降を使う
+<ul>
+<li><a href="https://github.com/rails/rails/commit/8744632" target="_blank">8744632</a>でutf8mb4対応したつもりだった</li>
+<li><code>rake db:migrate</code>ができないissueは上がってたけどutf8mb4対応が不完全なのにたぶん気づいてなかった</li>
+<li><a href="https://github.com/rails/rails/pull/12252" target="_blank">#12252</a>がめっちゃ放置される(つらい)</li>
+<li><a href="https://github.com/rails/rails/pull/12962" target="_blank">#12962</a>でようやくマージされる</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="3600" data-y="2400" class="step">
+<h2>utf8mb4</h2>
+
+<ul>
+<li>innodb_large_prefixを使う</li>
+<li><a href="http://blog.kamipo.net/entry/2012/11/13/102024" target="_blank">MySQL(InnoDB) で "Index column size too large. The maximum column size is 767 bytes." いわれるときの対策</a></li>
+</ul>
+
+</div>
+<div data-y="2400" class="step" data-x="4800">
+<h2>validates :uniquenessのBINARY</h2>
+
+<ul>
+<li><a href="http://tmtms.hatenablog.com/entry/20120608/rails_unique" target="_blank">Rails でユニーク制約 その２ - @tmtms のメモ</a></li>
+<li>調べたら2009年からみんな困ってた
+<ul>
+<li><a href="http://grosser.it/2009/12/11/validates_uniqness_of-mysql-slow/" target="_blank">validates_uniqness_of + mysql == SLOW</a></li>
+<li><a href="http://techblog.floorplanner.com/case-insensitive-validates-uniqueness-of-slowness/" target="_blank">Case-insensitive validates_uniqueness_of slowness</a></li>
+<li><a href="https://github.com/rails/rails/issues/1399" target="_blank">#1399</a>ではもう直ってるからってcloseしているけどなにも問題は解決されてないままだった</li>
+</ul></li>
+<li><a href="https://github.com/rails/rails/pull/13040" target="_blank">#13040</a>がめっちゃ放置されたけど周りの人たちが働きかけてくれたおかげでマージされる</li>
+</ul>
+
+</div>
+<div data-x="0" data-y="3200" class="step">
+<h2>utf8_unicode_ci</h2>
+
+<ul>
+<li><a href="http://qiita.com/kamipo/items/d7863f0df24916005657" target="_blank">ActiveRecordでデフォルトの照合順序を変更する</a></li>
+<li>意図せずにutf8_unicode_ciを使うと日本語の検索でハマる</li>
+<li>なぜデフォルトのcollationをutf8_unicode_ciに変えるのか
+<ul>
+<li>MySQLでなにも意図せずにutf8の文字列型を定義したときcollationはutf8_general_ciになるがそれで困った人はいなかったはずである</li>
+<li>問題のコミットは<a href="https://github.com/rails/rails/commit/f6ca7e4" target="_blank">f6ca7e4</a>だけどそうしなければならない理由はないように見える</li>
+<li>そうしなければならない理由がない限りデフォルトのcollation(utf8_general_ci)を尊重してほしい</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="1200" class="step" data-y="3200">
+<h2>unsigned int</h2>
+
+<ul>
+<li>ActiveRecord本体では未だ対応されず
+<ul>
+<li><a href="https://github.com/waka/activerecord-mysql-unsigned" target="_blank">waka/activerecord-mysql-unsigned</a>を使うとよい</li>
+</ul></li>
+<li>Lighthouse時代の遺産(<a href="https://github.com/rails/rails/issues/574" target="_blank">Unsigned integers for MySQL #574</a>)が残ってるので古来より人々が求めていた機能だったということがうかがえる</li>
+</ul>
+
+</div>
+<div data-x="2400" class="step" data-y="3200">
+<h2>PostgreSQL対応は活発</h2>
+
+<ul>
+<li>jsonカラムやarrayオプションサポート</li>
+<li>primary_keyにuuidを指定できる</li>
+<li>primary_keyにbigserialを指定できる</li>
+<li>primary_keyに任意の型を指定できる</li>
+</ul>
+
+</div>
+<div data-x="3600" class="step" data-y="3200">
+<h2>MySQL対応もがんばりたい</h2>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/13040" target="_blank">#13040</a>はめっちゃ放置されたけど周りの人たちが働きかけてくれたおかげでマージされた</li>
+<li>MySQL使ってる人たちはまだまだたくさんいるはずなのでみんなで問題を上げていきましょう</li>
+</ul>
+
+</div>
+<div class="step" data-y="3200" data-x="4800">
+<h2>以上</h2>
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script src="js/impress.js"></script>
+
+</body>
+</html>
+
