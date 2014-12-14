@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MySQLとActiveRecordその後</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css" rel="stylesheet" />
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div data-x="0" class="step" data-y="0" id="title">
+<h1>MySQLとActiveRecord<br/>その後</h1>
+
+<p>2014/12/12<br/>
+MySQL Casual Talks vol.7<br/>
+<address>
+<a href="https://twitter.com/kamipo" target="_blank">@kamipo</a><br/>
+<a href="https://github.com/kamipo" target="_blank">github/kamipo</a>
+</address></p>
+
+</div>
+<div data-x="1200" class="step" data-y="0">
+<h2>About me</h2>
+
+<ul>
+<li><a href="https://twitter.com/kamipo" target="_blank">twitter/kamipo</a></li>
+<li><a href="https://github.com/kamipo" target="_blank">github/kamipo</a></li>
+<li><a href="http://qiita.com/kamipo" target="_blank">qiita/kamipo</a></li>
+<li><a href="http://blog.kamipo.net/" target="_blank">かみぽわーる</a></li>
+</ul>
+
+</div>
+<div data-y="0" class="step" data-x="2400">
+<h2><a href="http://connpass.com/event/9560/" target="_blank">Rails複数DB Casual Talks</a></h2>
+
+<ul>
+<li><a href="http://blog.kamipo.net/entry/2014/11/16/112225" target="_blank">Rails複数DB Casual TalksでMySQLとActiveRecordの話をしてきた</a></li>
+</ul>
+
+</div>
+<div data-x="3600" class="step" data-y="0">
+<h2>Rails複数DB Casualでの話</h2>
+
+<ul>
+<li>ActiveRecordのMySQL対応は放置される傾向にある</li>
+<li>ActiveRecordからMySQLを使うときのハマりどころ</li>
+</ul>
+
+</div>
+<div class="step" data-y="0" data-x="4800">
+<h2>ActiveRecordのMySQL対応は放置される傾向にある</h2>
+
+<ul>
+<li><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></li>
+<li>a_matsudaさんがゲストの回でActiveRecordのMySQL対応について言及されてる</li>
+</ul>
+
+</div>
+<div data-x="0" class="step" data-y="800">
+<h2><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></h2>
+
+<pre><code>miyagawa「MySQLのdatetimeでmicrosecondサポートするやつマージされるのに1年半ぐらいかかった」
+</code></pre>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/8240" target="_blank">MySQL 5.6 and later supports microsecond precision in datetime. #8240</a></li>
+</ul>
+
+</div>
+<div data-x="1200" data-y="800" class="step">
+<h2><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></h2>
+
+<pre><code>a_matsuda「ARメンテしてる人が全員ポスグレ派でMySQL使ってる人がたぶん誰もいない」
+</code></pre>
+
+</div>
+<div data-x="2400" class="step" data-y="800">
+<h2><a href="http://rebuild.fm/56/" target="_blank">Rebuild: 56</a></h2>
+
+<pre><code>a_matsuda「MySQLまわりのパッチはめっちゃ放置される傾向にあります」
+</code></pre>
+
+</div>
+<div data-x="3600" class="step" data-y="800">
+<h2>ActiveRecordのMySQL対応は放置される傾向にある</h2>
+
+<ul>
+<li>メンテナが全員ポスグレ派なので使ってる人が問題を上げていくしかない</li>
+<li>MySQL使ってる人たちが問題を上げていかないと解決されないままになる</li>
+</ul>
+
+</div>
+<div class="step" data-y="800" data-x="4800">
+<h2>MySQL対応パッチを投げてみた</h2>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pulls/kamipo" target="_blank">Pull Requests by kamipo · rails/rails</a></li>
+</ul>
+
+</div>
+<div class="step" data-y="1600" data-x="0">
+<h2>MySQL対応パッチを投げてみた</h2>
+
+<ul>
+<li>いっぱい投げてみたけどほとんど4.2.0には入れれなかった
+<ul>
+<li>for MySQLって書いたPRはひとつもマージされなかった</li>
+<li>IntegerのRangeErrorは超絶リグレッションだから直せてよかった</li>
+</ul></li>
+<li>まだまだ直したいissueがいっぱいあるので5.0.0に向けてがんばりたい</li>
+</ul>
+
+</div>
+<div data-x="1200" class="step" data-y="1600">
+<h2><a href="https://rubygems.org/gems/activerecord-mysql-awesome" target="_blank">activerecord-mysql-awesome</a></h2>
+
+<ul>
+<li>ActiveRecord 4.x向けにバックポートすることにした</li>
+</ul>
+
+</div>
+<div data-x="2400" class="step" data-y="1600">
+<h2>バックポートしたPR</h2>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/17569" target="_blank">Add SchemaDumper support table_options for MySQL. #17569</a></li>
+<li><a href="https://github.com/rails/rails/pull/17574" target="_blank">Add charset and collation options support for MySQL string and text columns. #17574</a></li>
+<li><a href="https://github.com/rails/rails/pull/17631" target="_blank">Add bigint pk support for MySQL #17631</a></li>
+<li><a href="https://github.com/rails/rails/pull/17654" target="_blank">If do not specify strict_mode explicitly, do not set sql_mode. #17654</a></li>
+<li><a href="https://github.com/rails/rails/pull/17696" target="_blank">Add unsigned option support for MySQL numeric data types #17696</a></li>
+<li><a href="https://github.com/rails/rails/pull/17851" target="_blank">Support for any type primary key #17851</a></li>
+</ul>
+
+</div>
+<div data-x="3600" data-y="1600" class="step">
+<h2>バックポートしたPR</h2>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/17798" target="_blank">Refactor <code>SchemaCreation#visit_AddColumn</code> #17798</a></li>
+<li><a href="https://github.com/rails/rails/pull/17822" target="_blank">Refactor <code>visit_ChangeColumnDefinition</code> #17822</a></li>
+<li><a href="https://github.com/rails/rails/pull/17894" target="_blank">Add default value for <code>create_table_definition</code> #17894</a></li>
+</ul>
+
+</div>
+<div data-x="4800" class="step" data-y="1600">
+<h2>まだまだバックポートするのでよろしくお願いします！</h2>
+
+</div>
+<div class="step" data-y="2400" data-x="0">
+<h2>Enjoy!!🍻</h2>
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script src="js/impress.js"></script>
+
+</body>
+</html>
+
