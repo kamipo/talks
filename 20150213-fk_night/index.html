@@ -1,0 +1,390 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>我々は何故RDBMSを使うのか</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css" rel="stylesheet" />
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div class="step" data-y="0" id="title" data-x="0">
+<h1>我々は何故RDBMSを使うのか</h1>
+
+<p>2015/02/13<br/>
+外部キー Night<br/>
+<address>
+<a href="https://twitter.com/kamipo" target="_blank">@kamipo</a><br/>
+<a href="https://github.com/kamipo" target="_blank">github/kamipo</a>
+</address></p>
+
+</div>
+<div class="step" data-y="0" data-x="1200">
+<h2>About me</h2>
+
+<ul>
+<li><a href="https://twitter.com/kamipo" target="_blank">twitter/kamipo</a></li>
+<li><a href="https://github.com/kamipo" target="_blank">github/kamipo</a></li>
+<li><a href="http://qiita.com/kamipo" target="_blank">qiita/kamipo</a></li>
+<li><a href="http://blog.kamipo.net/" target="_blank">かみぽわーる</a></li>
+</ul>
+
+</div>
+<div class="step" data-y="0" data-x="2400">
+<h2>Recent state</h2>
+
+<ul>
+<li><a href="http://kamipo.github.io/talks/20141110-mdb_casual/#/title" target="_blank">MySQLとActiveRecord</a></li>
+<li><a href="http://kamipo.github.io/talks/20141212-mysqlcasual7/#/title" target="_blank">MySQLとActiveRecord その後</a></li>
+</ul>
+
+</div>
+<div data-x="3600" data-y="0" class="step">
+<h2>Recent state</h2>
+
+<p><a href="https://github.com/rails/rails/pulls/kamipo" target="_blank"><img src="img/rails_pr_1.png" alt="Pull requests" /></a></p>
+
+</div>
+<div class="step" data-y="0" data-x="4800">
+<h2>Recent state</h2>
+
+<p><a href="https://github.com/rails/rails/commits?author=kamipo" target="_blank"><img src="img/rails_pr_2.png" alt="Contribution activity" /></a></p>
+
+</div>
+<div class="step" data-y="800" data-x="0">
+<h2>我々は何故RDBMSを使うのか</h2>
+
+<ul>
+<li>信頼性のあるトランザクションシステムとして一貫性あるいは整合性を担保したい</li>
+</ul>
+
+</div>
+<div class="step" data-y="800" data-x="1200">
+<h2>信頼性のあるトランザクションシステムの持つべき性質</h2>
+
+<ul>
+<li>ACID
+<ul>
+<li>Atomicity(原子性)</li>
+<li>Consistency(一貫性)</li>
+<li>Isolation(独立性)</li>
+<li>Durability(永続性)</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-y="800" class="step" data-x="2400">
+<h2>信頼性のある(以下略)を担保するためのRDBMSの機能</h2>
+
+<ul>
+<li>トランザクション
+<ul>
+<li>トランザクション分離レベル</li>
+</ul></li>
+<li>制約(Constraint)
+<ul>
+<li>NOT NULL 制約</li>
+<li>UNIQUE 制約</li>
+<li>PRIMARY KEY 制約</li>
+<li>FOREIGN KEY 制約</li>
+<li>CHECK 制約</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="3600" class="step" data-y="800">
+<h2>トランザクションについての事例</h2>
+
+<ul>
+<li><a href="https://twitter.com/yamionp" target="_blank">@yamionp</a>さんの資料が興味深い</li>
+<li><a href="http://www.slideshare.net/yugoshimizu/ss-38626214" target="_blank">分割と整合性と戦う</a>
+<ul>
+<li>機能単位で垂直分割したシステムで多発する不整合</li>
+<li>XAトランザクションによる一貫性担保</li>
+<li>そして伝説へ...</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="4800" data-y="800" class="step">
+<h2>制約(Constraint)</h2>
+
+<ul>
+<li>データの不整合を防いで一貫性を担保する機能
+<ul>
+<li>NOT NULL 制約</li>
+<li>UNIQUE 制約</li>
+<li>PRIMARY KEY 制約</li>
+<li>FOREIGN KEY 制約</li>
+<li>CHECK 制約</li>
+</ul></li>
+</ul>
+
+</div>
+<div class="step" data-y="1600" data-x="0">
+<h2>よく使う制約</h2>
+
+<ul>
+<li>制約の検査における影響範囲が限定的
+<ul>
+<li>NOT NULL 制約</li>
+<li>UNIQUE 制約</li>
+<li>PRIMARY KEY 制約</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-y="1600" class="step" data-x="1200">
+<h2>あまり使われない制約</h2>
+
+<ul>
+<li>FOREIGN KEY 制約
+<ul>
+<li>今日のお題</li>
+</ul></li>
+<li>CHECK 制約
+<ul>
+<li>MySQLでは使えない(☝◞‸◟)☝</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="2400" class="step" data-y="1600">
+<h2>FOREIGN KEY 制約</h2>
+
+<ul>
+<li>参照整合性(referential integrity)を担保するための機能</li>
+<li>参照関係(親子関係)のあるデータの一貫性を担保する
+<ul>
+<li>has_many / has_one / belongs_to</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="3600" class="step" data-y="1600">
+<h2>ON [ DELETE | UPDATE ]</h2>
+
+<ul>
+<li>親が更新(削除)されるときの挙動
+<ul>
+<li>RESTRICT</li>
+<li>CASCADE</li>
+<li>SET NULL</li>
+<li>NO ACTION</li>
+</ul></li>
+</ul>
+
+</div>
+<div class="step" data-y="1600" data-x="4800">
+<h2>MySQLとFOREIGN KEY</h2>
+
+<ul>
+<li>その昔MySQLのデフォルトのストレージエンジンはMyISAMだった
+<ul>
+<li>トランザクション非対応</li>
+<li>FOREIGN KEY使えない</li>
+<li>クラッシュセーフではない</li>
+<li>ACIDとはRDBMSとは何だったのか...</li>
+</ul></li>
+<li>良くも悪くもMyISAMは20世紀のMongoDBだった</li>
+</ul>
+
+</div>
+<div data-y="2400" class="step" data-x="0">
+<h2>外部キー制約張るとデータ入れるのがめんどい(FAQ)</h2>
+
+<ul>
+<li>たしかにMySQLはめんどい部分はある</li>
+<li>MySQLは即時制約チェックしか対応してない
+<ul>
+<li>ステートメント毎に制約チェック</li>
+<li>MySQLではRESTRICTとNO ACTIONは同じ動作になる</li>
+</ul></li>
+<li>他のRDBMSは遅延制約チェックにすることができる
+<ul>
+<li>トランザクションコミット時に制約チェック</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-y="2400" class="step" data-x="1200">
+<h2>制約は(一時的に)無効にできる</h2>
+
+<pre style="font-size: 80%"><code># mysqldump
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS,
+    UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS,
+    FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE,
+    SQL_MODE='NO_AUTO_VALUE_ON_ZERO';
+</code></pre>
+
+</div>
+<div data-x="2400" data-y="2400" class="step">
+<h2>制約は(一時的に)無効にできる</h2>
+
+<ul>
+<li><code>mysqldump</code>の出力するSQLでも使われている
+<ul>
+<li><a href="http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html#sysvar_unique_checks" target="_blank">UNIQUE_CHECKS</a></li>
+<li><a href="http://dev.mysql.com/doc/refman/5.6/en/server-system-variables.html#sysvar_foreign_key_checks" target="_blank">FOREIGN_KEY_CHECKS</a></li>
+</ul></li>
+<li>データのリストアやfixtureのロード等データの整合性をチェックしなくても一貫性が保証できる場合に制約を無効にするのは有り</li>
+</ul>
+
+</div>
+<div class="step" data-y="2400" data-x="3600">
+<h2>システム構成や要件によって制約を使えない場合がある</h2>
+
+<p><a href="https://twitter.com/kamipo/status/554941165137448960" target="_blank"><img src="img/should_use_rdbms_but.png" alt="これが現実" /></a></p>
+
+</div>
+<div data-x="4800" data-y="2400" class="step">
+<h2>システム構成や要件によって制約を使えない場合がある</h2>
+
+<p><a href="https://twitter.com/kamipo/statuses/10905080312111104" target="_blank"><img src="img/cascading_delete.png" alt="遺産" /></a></p>
+
+</div>
+<div data-x="0" class="step" data-y="3200">
+<h2>システム構成や要件によって制約を使えない場合がある</h2>
+
+<ul>
+<li>現在のRDBMSの実装上の制限による問題
+<ul>
+<li><a href="http://songmu.github.io/slides/fk-night/#0" target="_blank">我々(主語が大きい)は何故MySQLで外部キーを使わないのか</a></li>
+</ul></li>
+<li>システム構成や要件による制限
+<ul>
+<li>DB分割等</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="1200" data-y="3200" class="step">
+<h2>将来的には技術的に解決されてほしい</h2>
+
+<p>@kamipo said:</p>
+
+<pre><code>現状の cascading delete がWeb屋さんの実用上問題なのは一気に大量の行が消えるってなったときに他のトランザクションが長時間待たされるからだから、この外部キーの参照先が消えたってのをキューイングしといて参照整合性だけ保って裏でゆっくり消える機能があればいいと思う。
+</code></pre>
+
+</div>
+<div data-x="2400" data-y="3200" class="step">
+<h2>将来的には技術的に解決されてほしい</h2>
+
+<p>@kamipo said:</p>
+
+<pre><code>ポスグレにはインデックス作成で書き込みをブロックしないCONCURRENTLYオプションとかもあるのだから、大量の行に触るオペレーションには実用上問題があるケースがあることはわかってるってことだし参照整合性を保ってゆっくり消すのをユーザーが実装するのは無駄な労力だと思われる。
+</code></pre>
+
+</div>
+<div data-x="3600" data-y="3200" class="step">
+<h2>将来的には技術的に解決されてほしい</h2>
+
+<p>@kamipo said:</p>
+
+<pre><code>SELECT COUNT(*) 貯金とか ORDER BY RAND 貯金とか ON DELETE CASCADE 貯金とかして毎月会社で飲み会したい
+</code></pre>
+
+</div>
+<div data-x="4800" class="step" data-y="3200">
+<h2>制約を使える場合でも万能ではない</h2>
+
+<ul>
+<li>要件に合わない使い方をすれば当然問題になる
+<ul>
+<li>特にON DELETE CASCADEが問題になる場合が多い</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="0" data-y="4000" class="step">
+<h2>ON DELETE CASCADEがヤバいシステムをどうするか</h2>
+
+<ul>
+<li>親データの削除で大量の子データも同時に削除される
+<ul>
+<li>大量の行が削除される巨大トランザクションで他のトランザクションが待たされる</li>
+<li>MySQLのレプリケーションのようにslaveがシングルスレッドで更新していると巨大トランザクションでslaveが遅延していく</li>
+</ul></li>
+<li>設計をなおすまでは運用でカバーするしかない</li>
+</ul>
+
+</div>
+<div data-y="4000" class="step" data-x="1200">
+<h2>ON DELETE CASCADEがヤバいシステムをどうするか</h2>
+
+<ul>
+<li>仕様を変更できるなら
+<ul>
+<li>ユーザーさんは自分の投稿したデータを自分で削除してから退会できます</li>
+<li>殿堂入りユーザーさんは退会できません</li>
+<li>ユーザーは論理削除して投稿データは削除済みで表示する
+<ul>
+<li>ニコ動みたいな感じ？</li>
+</ul></li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="2400" data-y="4000" class="step">
+<h2>レビュー重要</h2>
+
+<ul>
+<li>要件に合わない使い方をすればどんな機能でも問題になりうる</li>
+<li>設計の正解は難しい
+<ul>
+<li>将来の要件まで見通すのは経験によるところもある</li>
+</ul></li>
+</ul>
+
+</div>
+<div data-x="3600" class="step" data-y="4000">
+<h2>レビュー重要</h2>
+
+<p><a href="https://twitter.com/sugyan/status/562566085275181056" target="_blank"><img src="img/review_ojisan.png" alt="レビューおじさん" /></a></p>
+
+</div>
+<div class="step" data-y="4000" data-x="4800">
+<h2>我々は何故RDBMSを使うのか</h2>
+
+<ul>
+<li>信頼性のあるトランザクションシステムとして一貫性あるいは整合性を担保したい</li>
+<li>システム構成や要件によって制約を使えない場合がある
+<ul>
+<li>その場合アプリケーション側で一貫性を担保する必要がある</li>
+</ul></li>
+<li>(制約を使うにしろ使わないにしろ)要件に合わないと問題になりうる</li>
+<li>(設計ミスを機械的に防げればいいが現状は)レビュー重要</li>
+</ul>
+
+</div>
+<div data-x="0" class="step" data-y="4800">
+<h2>以上</h2>
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script src="js/impress.js"></script>
+
+</body>
+</html>
+
