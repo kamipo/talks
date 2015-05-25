@@ -1,0 +1,29 @@
+GIT
+  remote: git://github.com/tsucchi/ruby-markdown2impress.git
+  revision: f9eaa89fca6166d7b1bf25496ab8836e2406d414
+  specs:
+    markdown2impress (0.0.1)
+      eventmachine (~> 1.0)
+      nokogiri (~> 1.6)
+      pygments.rb (~> 0.6)
+      redcarpet (~> 3.2)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    eventmachine (1.0.7)
+    mini_portile (0.6.2)
+    nokogiri (1.6.6.2)
+      mini_portile (~> 0.6.0)
+    posix-spawn (0.3.11)
+    pygments.rb (0.6.3)
+      posix-spawn (~> 0.3.6)
+      yajl-ruby (~> 1.2.0)
+    redcarpet (3.2.3)
+    yajl-ruby (1.2.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  markdown2impress!
