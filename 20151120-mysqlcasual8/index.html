@@ -1,0 +1,207 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Prepared statements on MySQL in Ruby</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css"  rel="stylesheet" />
+    <link href="css/pygments.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div class="step" id="title" data-x="0" data-y="0">
+
+
+<h1>Prepared statements on MySQL in Ruby</h1>
+
+<p>2015/11/20<br>
+MySQL Casual Talks vol.8<br>
+</p>
+<address>
+<a href="https://twitter.com/kamipo">@kamipo</a><br>
+<a href="https://github.com/kamipo">github/kamipo</a>
+</address>
+
+
+</div>
+<div class="step" data-x="1200" data-y="0">
+
+
+<h2>About me</h2>
+
+<ul>
+<li><a href="https://twitter.com/kamipo">twitter/kamipo</a></li>
+<li><a href="https://github.com/kamipo">github/kamipo</a></li>
+<li><a href="http://qiita.com/kamipo">qiita/kamipo</a></li>
+<li><a href="http://blog.kamipo.net/">かみぽわーる</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="0">
+
+
+<h2>近況🐬</h2>
+
+<p><a href="https://twitter.com/kamipo/status/666537628603297792">
+<img src="img/3306.png" width="50%" alt="フォロワー3306人になりました！！">
+</a></p>
+
+
+</div>
+<div class="step" data-x="3600" data-y="0">
+
+
+<h2>RubyのMySQLバインディング</h2>
+
+<ul>
+<li>
+<strong>mysql</strong> <a href="https://github.com/luislavena/mysql-gem">luislavena/mysql-gem</a>
+
+<ul>
+<li>MySQL C APIに忠実なラッパー</li>
+<li>Maintainer needed</li>
+</ul>
+</li>
+<li>
+<strong>mysql2</strong> <a href="https://github.com/brianmario/mysql2">brianmario/mysql2</a>
+
+<ul>
+<li>後発のモダンなやつ、今はみんなこれ使ってる</li>
+<li>Prepared statementsサポートしてなかった</li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="0">
+
+
+<h2>mysql2 0.4.0</h2>
+
+<ul>
+<li>Prepared statementsが使えるmysql2 0.4.0が出た！</li>
+<li>ISUCON5予選で使おうとしたら破滅的な挙動で死んだ😇
+
+<ul>
+<li><a href="https://github.com/brianmario/mysql2/issues/694">stmt.execute cause Error: 2014 (CR_COMMANDS_OUT_OF_SYNC) #694</a></li>
+<li>ISUCON5では信頼と実績の<a href="https://github.com/tagomoris/mysql2-cs-bind">tagomoris/mysql2-cs-bind</a>を使った</li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="0" data-y="800">
+
+
+<h2>mysql2 0.4.1</h2>
+
+<ul>
+<li>ISUCON5予選が終わって破滅的な挙動を直そうとしたらなんかいけそうなやつが既に実装されていた！
+
+<ul>
+<li><a href="https://github.com/brianmario/mysql2/pull/673">Support prepared_statement.close #673</a></li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="1200" data-y="800">
+
+
+<h2>mysql2 0.4.1</h2>
+
+<ul>
+<li>試してみたら即セグる破滅的な実装だった😨
+
+<ul>
+<li><a href="https://github.com/brianmario/mysql2/issues/690">stmt.close cause segv #690</a></li>
+</ul>
+</li>
+<li>とりあえず直した
+
+<ul>
+<li><a href="https://github.com/brianmario/mysql2/pull/692">Support result.free #692</a></li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="800">
+
+
+<h2>mysql2 0.4.1</h2>
+
+<ul>
+<li>result.freeを明示的に呼ぶのは好みじゃないらしく別実装がきた
+
+<ul>
+<li><a href="https://github.com/brianmario/mysql2/pull/697">Avoid crashing when Statement#close is called before a Result is collected #697</a></li>
+<li>最初の問題はまだ原因特定できてないしとりいそぎこの実装でもいいかなと思ってる</li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="3600" data-y="800">
+
+
+<h2>Prepared statements support for ActiveRecord</h2>
+
+<ul>
+<li>
+<a href="https://github.com/rails/rails/pull/22352">Add prepared statements support for <code>Mysql2Adapter</code> #22352</a>
+
+<ul>
+<li>PRed Today!!</li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="800">
+
+
+<h2>That's all🍻</h2>
+
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script>
+jQuery(function($){
+  $("a[href^='http']").attr('target', '_blank');
+});
+</script>
+
+
+
+<script src="js/impress.js"></script>
+</body>
+</html>
+
