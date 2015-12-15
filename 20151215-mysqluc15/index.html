@@ -1,0 +1,358 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>ActiveRecordとMySQL 5.7</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css"  rel="stylesheet" />
+    <link href="css/pygments.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div class="step" id="title" data-x="0" data-y="0">
+
+
+<h1>ActiveRecordとMySQL 5.7</h1>
+
+<p>2015/12/15<br>
+MySQL User Conference Tokyo 2015<br>
+</p>
+<address>
+<a href="https://twitter.com/kamipo">@kamipo</a><br>
+Treasure Data, Inc.
+</address>
+
+
+</div>
+<div class="step" data-x="1200" data-y="0">
+
+
+<h2>About me</h2>
+
+<ul>
+<li><a href="https://twitter.com/kamipo">twitter/kamipo</a></li>
+<li><a href="https://github.com/kamipo">github/kamipo</a></li>
+<li><a href="http://qiita.com/kamipo">qiita/kamipo</a></li>
+<li><a href="http://blog.kamipo.net/">かみぽわーる</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="0">
+
+
+<h2>近況🐬</h2>
+
+<p><a href="https://twitter.com/kamipo/status/666537628603297792">
+<img src="img/3306.png" width="55%" alt="フォロワー3306人になりました！！">
+</a></p>
+
+
+</div>
+<div class="step" data-x="3600" data-y="0">
+
+
+<h2>2年前のRails</h2>
+
+<ul>
+<li>
+<a href="http://togetter.com/li/599389">RailsのMySQL対応が弱いやつ</a>
+
+<ul>
+<li>RailsのSchema Migration機能ではMySQL対応が弱かった
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/12962">https://github.com/rails/rails/pull/12962</a></li>
+</ul>
+</li>
+<li>ブログ等で問題を訴えてる人はいたがMySQLのクソクエリが放置されていた
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/13040">https://github.com/rails/rails/pull/13040</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="0">
+
+
+<h2>1年前のRails</h2>
+
+<ul>
+<li><a href="http://rebuild.fm/56/">Rebuild: 56</a></li>
+<li>a_matsudaさんがゲストの回でActiveRecordのMySQL対応について言及されてる</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="0" data-y="800">
+
+
+<h2>1年前のRails</h2>
+
+<pre><code>miyagawa「MySQLのdatetimeでmicrosecondサポートするやつマージされるのに1年半ぐらいかかった」
+</code></pre>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/8240">MySQL 5.6 and later supports microsecond precision in datetime. #8240</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="1200" data-y="800">
+
+
+<h2>1年前のRails</h2>
+
+<pre><code>a_matsuda「ARメンテしてる人が全員ポスグレ派でMySQL使ってる人がたぶん誰もいない」
+</code></pre>
+
+
+</div>
+<div class="step" data-x="2400" data-y="800">
+
+
+<h2>1年前のRails</h2>
+
+<pre><code>a_matsuda「MySQLまわりのパッチはめっちゃ放置される傾向にあります」
+</code></pre>
+
+
+</div>
+<div class="step" data-x="3600" data-y="800">
+
+
+<h2>MySQLとActiveRecord</h2>
+
+<ul>
+<li>Rails複数DB Casual TalksでMySQLとActiveRecordの話をしてきた
+
+<ul>
+<li><a href="http://blog.kamipo.net/entry/2014/11/16/112225">http://blog.kamipo.net/entry/2014/11/16/112225</a></li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="800">
+
+
+<h2>Rails Contributors in this year</h2>
+
+<p><a href="https://github.com/rails/rails/graphs/contributors?from=2014-12-15&amp;to=2015-12-15&amp;type=c">
+<img src="img/contributors1.png" width="70%" alt="Rails Contributors in this year">
+</a></p>
+
+
+</div>
+<div class="step" data-x="0" data-y="1600">
+
+
+<h2>Rails Contributors in this year</h2>
+
+<p><a href="https://github.com/rails/rails/graphs/contributors?from=2014-12-15&amp;to=2015-12-15&amp;type=c">
+<img src="img/contributors2.png" width="90%" alt="Rails Contributors in this year">
+</a></p>
+
+
+</div>
+<div class="step" data-x="1200" data-y="1600">
+
+
+<h2>Edge Rails</h2>
+
+<ul>
+<li>この一年でかなり状況は改善された</li>
+<li>もはやRailsはMySQL対応が弱いフレームワークではなくなった</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="1600">
+
+
+<h2>改善された問題</h2>
+
+
+</div>
+<div class="step" data-x="3600" data-y="1600">
+
+
+<h2>utf8_unicode_ci</h2>
+
+<ul>
+<li><a href="http://qiita.com/kamipo/items/d7863f0df24916005657">ActiveRecordでデフォルトの照合順序を変更する</a></li>
+<li>
+<a href="http://blog.kamipo.net/entry/2015/03/08/145045">utf8_unicode_ci に対する日本の開発者の見解</a>
+
+<ul>
+<li><a href="http://blog.kamipo.net/entry/2015/03/17/103457">MySQL と Unicode Collation Algorithm (UCA)</a></li>
+<li><a href="http://blog.kamipo.net/entry/2015/03/23/093052">MySQL と寿司ビール問題</a></li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="1600">
+
+
+<h2>utf8_unicode_ci</h2>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/20000">The default collation should not be change #20000</a></li>
+<li><a href="https://github.com/rails/rails/pull/22061">Remove <code>DEFAULT_CHARSET</code> and <code>DEFAULT_COLLATION</code></a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="0" data-y="2400">
+
+
+<h2>strict_mode</h2>
+
+<ul>
+<li><a href="http://qiita.com/kamipo/items/2ce1d668afbb3d2afd86">ActiveRecordでstrict_modeを無効にする</a></li>
+<li><a href="https://github.com/rails/rails/issues/17370">Don't want to overwrite sql_mode, but how is gone. #17370</a></li>
+<li><a href="https://github.com/rails/rails/pull/17654">If specify <code>strict: :default</code> explicitly, do not set sql_mode. #17654</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="1200" data-y="2400">
+
+
+<h2>Datetime rounding problem</h2>
+
+<ul>
+<li><a href="http://qiita.com/kamipo/items/fb3f7aff8e08fcd67898">MySQL 5.6からDATETIMEは小数点以下が四捨五入(round)されるので気を付けよう</a></li>
+<li><a href="https://github.com/rails/rails/pull/18067">Format the datetime string according to the precision of the datetime field. #18067</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="2400">
+
+
+<h2>MySQL 5.7への対応</h2>
+
+
+</div>
+<div class="step" data-x="3600" data-y="2400">
+
+
+<h2>MySQL 5.7への新機能対応</h2>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/21110">Add a native JSON data type support in MySQL #21110</a></li>
+<li><a href="https://github.com/rails/rails/pull/22589">Add Generated Columns support for MySQL 5.7 #22589</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="2400">
+
+
+<h2>MySQL 5.7への非互換対応</h2>
+
+<ul>
+<li>show_compatibility_56=off</li>
+<li>derived_merge=on</li>
+<li>ONLY_FULL_GROUP_BY</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="0" data-y="3200">
+
+
+<h2>show_compatibility_56=off</h2>
+
+<ul>
+<li><a href="http://yoku0825.blogspot.jp/2015/07/mysql-578performanceschemaoffshow-status.html">MySQL 5.7では迂闊にperformance_schemaをOFFするとSHOW STATUSが使えない</a></li>
+<li><a href="https://github.com/rails/rails/pull/21318">Support MySQL 5.7.8 which enables show_compatibility_56=off #21318</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="1200" data-y="3200">
+
+
+<h2>derived_merge=on</h2>
+
+<ul>
+<li><a href="http://blog.kamipo.net/entry/2015/12/08/075800">MySQL 5.7のoptimizer_switch、derived_mergeとは何ぞや</a></li>
+<li><a href="https://github.com/rails/rails/pull/19359">Materialize subqueries by adding <code>DISTINCT</code> to suport MySQL 5.7.6 and later #19359</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="3200">
+
+
+<h2>ONLY_FULL_GROUP_BY</h2>
+
+<ul>
+<li><a href="http://blog.kamipo.net/entry/2015/12/14/171838">MySQL 5.7のONLY_FULL_GROUP_BYはちょっと進化してた</a></li>
+<li><a href="https://github.com/rails/rails/pull/22241">Add <code>columns_for_distinct</code> for MySQL 5.7 with ONLY_FULL_GROUP_BY #22241</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="3600" data-y="3200">
+
+
+<h2>まとめ</h2>
+
+<ul>
+<li>RailsのMySQL対応はこの一年でかなり状況は改善された</li>
+<li>もはやRailsはMySQL対応が弱いフレームワークではなくなった</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="3200">
+
+
+<h2>That's all</h2>
+
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script>
+jQuery(function($){
+  $("a[href^='http']").attr('target', '_blank');
+});
+</script>
+
+
+
+<script src="js/impress.js"></script>
+</body>
+</html>
+
