@@ -11,15 +11,15 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    eventmachine (1.0.7)
-    mini_portile (0.6.2)
-    nokogiri (1.6.6.2)
-      mini_portile (~> 0.6.0)
-    posix-spawn (0.3.11)
+    eventmachine (1.2.1)
+    mini_portile2 (2.1.0)
+    nokogiri (1.7.0.1)
+      mini_portile2 (~> 2.1.0)
+    posix-spawn (0.3.12)
     pygments.rb (0.6.3)
       posix-spawn (~> 0.3.6)
       yajl-ruby (~> 1.2.0)
-    redcarpet (3.2.3)
+    redcarpet (3.4.0)
     yajl-ruby (1.2.1)
 
 PLATFORMS
@@ -27,3 +27,6 @@ PLATFORMS
 
 DEPENDENCIES
   markdown2impress!
+
+BUNDLED WITH
+   1.13.7
