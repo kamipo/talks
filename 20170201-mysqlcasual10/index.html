@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>知って得しない Active Record Issues (MySQL編)</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css"  rel="stylesheet" />
+    <link href="css/pygments.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div class="step" id="title" data-x="0" data-y="0">
+
+
+<h1>知って得しない Active Record Issues (MySQL編)</h1>
+
+<p>2017/02/01<br>
+MySQL Casual Talks vol.10<br>
+</p>
+<address>
+<a href="https://twitter.com/kamipo">@kamipo</a><br>
+<a href="https://github.com/kamipo">github/kamipo</a>
+</address>
+
+
+</div>
+<div class="step" data-x="1200" data-y="0">
+
+
+<h2>About me</h2>
+
+<ul>
+<li><a href="http://press.forkwell.com/post/156285265531/interview-kamipo-1">第1部：君がッ！ 泣いてマージするまで、プルリクを送ることをやめないッ！</a></li>
+<li><a href="http://press.forkwell.com/post/156601527154/interview-kamipo-2">第2部：「この境地にいるのは自分だけ」ー 自身を追い込み続けてたどり着いた「高み」</a></li>
+<li><a href="http://press.forkwell.com/tagged/%E3%83%AA%E3%83%AC%E3%83%BC%E3%82%A4%E3%83%B3%E3%82%BF%E3%83%93%E3%83%A5%E3%83%BC">第3部：金髪の神エンジニア・kamipo 伝説のもうひとつの真実</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="0">
+
+
+<h2>Rails Contributors in 2016</h2>
+
+<p><a href="https://github.com/rails/rails/graphs/contributors?from=2016-01-01&amp;to=2016-12-31">
+<img src="img/contributors_2016.png" width="80%" alt="Rails Contributors in 2016">
+</a></p>
+
+
+</div>
+<div class="step" data-x="3600" data-y="0">
+
+
+<h2>知って得しない<br>Active Record Issues</h2>
+
+<p>世の中には通常では考えられない使い方をする人々がいる</p>
+
+
+</div>
+<div class="step" data-x="4800" data-y="0">
+
+
+<h2><a href="https://github.com/rails/rails/issues/27125">#27125 zerofillを使うとunsignedの判定に失敗する</a></h2>
+
+<ul>
+<li>
+<code>enum('foo','bar','unsigned')</code> みたいなのがunsignedと判定されないように直したらzerofill属性ついてるときにunsigned判定されなくなってしまった <a href="https://github.com/rails/rails/pull/22896">#22896</a>
+</li>
+<li>なんでzerofillついてるテーブルをActive Recordで扱いたいのか理解に苦しむけどzerofill考慮するように修正 <a href="https://github.com/rails/rails/pull/27126">#27126</a>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="0" data-y="800">
+
+
+<h2><a href="https://github.com/rails/rails/issues/25300">#25300 ANSI_QUOTESが有効だとON DELETE CASCADEとかが吹っ飛ぶ</a></h2>
+
+<ul>
+<li>もともと <code>sql_mode</code> が <code>STRICT_ALL_TABLES</code> で上書きされていたのを追加(append)に変更したら世の中には <code>ANSI_QUOTES</code> を有効にして運用してる人がいた <a href="https://github.com/rails/rails/pull/24167">#24167</a>
+</li>
+<li>
+<code>SHOW CREATE TABLE</code> から <code>ON DELETE CASCADE</code> なところを正規表現で抽出してたのが <code>ANSI_QUOTES</code> でクオートが <code>"</code> に変わって正規表現がマッチしなくなった</li>
+<li>
+<code>information_schema</code>(<code>referential_constraints</code>) から抽出するように修正 <a href="https://github.com/rails/rails/pull/25307">#25307</a>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="1200" data-y="800">
+
+
+<h2><a href="https://github.com/rails/rails/issues/27579">#27579 外部キー取得が死ぬほど遅くなった</a></h2>
+
+<ul>
+<li>さっきの修正(<a href="https://github.com/rails/rails/pull/25307">#25307</a>)でもともと0.1秒ぐらいだったのが26秒ぐらい掛かるようになった
+
+<ul>
+<li>おまけに MySQL 5.1.10 から追加されたテーブルを使ってしまったので MySQL 5.0 で動かなくなった <a href="https://github.com/rails/rails/issues/27422">#27422</a>
+</li>
+</ul>
+</li>
+<li>
+<code>information_schema</code> にはインデックスがないけど特定の条件で絞り込むと最適化が効くらしい
+
+<ul>
+<li><a href="https://dev.mysql.com/doc/refman/5.7/en/information-schema-optimization.html">https://dev.mysql.com/doc/refman/5.7/en/information-schema-optimization.html</a></li>
+</ul>
+</li>
+<li>最適化が効くように各テーブルに条件を追加 <a href="https://github.com/rails/rails/pull/27580">#27580</a>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="800">
+
+
+<h2>壊したっていいじゃない<br>にんげんだもの</h2>
+
+<p>かみぽ</p>
+
+
+</div>
+<div class="step" data-x="3600" data-y="800">
+
+
+<h2>That's all🍻</h2>
+
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script>
+jQuery(function($){
+  $("a[href^='http']").attr('target', '_blank');
+});
+</script>
+
+
+
+<script src="js/impress.js"></script>
+</body>
+</html>
+
