@@ -1,0 +1,505 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Rails 5.2のActive Recordの改善</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css"  rel="stylesheet" />
+    <link href="css/pygments.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div class="step" id="title" data-x="0" data-y="0">
+
+
+<h1>Rails 5.2のActive Recordの改善</h1>
+
+<p>2018/02/15<br>
+PLAZMA OSS Day: TD Tech Talk 2018<br>
+</p>
+<address>
+Ryuta Kamizono (<a href="https://github.com/kamipo">@kamipo</a>)<br>
+Treasure Data, Inc.
+</address>
+
+
+</div>
+<div class="step" data-x="1200" data-y="0">
+
+
+<h2>About me</h2>
+
+<ul>
+<li>Ryuta Kamizono (<a href="https://github.com/kamipo">@kamipo</a>)</li>
+<li>Software Engineer at Treasure Data, Inc.</li>
+<li>Oracle ACE (MySQL expert) alumni</li>
+<li>Rails Commiters Team</li>
+<li>Ruby Prize 2017</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="0">
+
+
+<h2>Activity</h2>
+
+<p>去年の8月にRailsコミッターになったのでIssues/PRをがんばって減らせるようになった</p>
+
+
+</div>
+<div class="step" data-x="3600" data-y="0">
+
+
+<h2>Activity</h2>
+
+<p><img src="img/tw_kamipo_pr700.png" width="70%">
+<a href="https://twitter.com/kamipo/statuses/842643547652161536">https://twitter.com/kamipo/statuses/842643547652161536</a></p>
+
+
+</div>
+<div class="step" data-x="4800" data-y="0">
+
+
+<h2>Activity</h2>
+
+<p><img src="img/tw_kamipo_pr777.png" width="70%">
+<a href="https://twitter.com/kamipo/statuses/894845890489229313">https://twitter.com/kamipo/statuses/894845890489229313</a></p>
+
+
+</div>
+<div class="step" data-x="0" data-y="800">
+
+
+<h2>Activity</h2>
+
+<p><img src="img/tw_kamipo_decrease.png" width="60%">
+<a href="https://twitter.com/kamipo/status/959364908721688576">https://twitter.com/kamipo/status/959364908721688576</a></p>
+
+
+</div>
+<div class="step" data-x="1200" data-y="800">
+
+
+<h2>Rails Contributors - Edge</h2>
+
+<p><img src="img/contributors_edge.png" width="100%">
+<a href="http://contributors.rubyonrails.org/edge/contributors">http://contributors.rubyonrails.org/edge/contributors</a></p>
+
+
+</div>
+<div class="step" data-x="2400" data-y="800">
+
+
+<h2>Rails 5.2.0 RC1 has released!</h2>
+
+<p><a href="http://weblog.rubyonrails.org/2018/1/30/Rails-5-2-RC1-Active-Storage-Redis-Cache-Store-HTTP2-Early-Hints-Credentials/">Rails 5.2.0 RC1: Active Storage, Redis Cache Store, HTTP/2 Early Hints, CSP, Credentials</a></p>
+
+
+</div>
+<div class="step" data-x="3600" data-y="800">
+
+
+<h2>Rails 5.2.0 RC1 has released!</h2>
+
+<p>リリースノートに載るような新機能はないけど5.1以前では解決されていなかった多くの問題が5.2のActive Recordでは改善されている</p>
+
+
+</div>
+<div class="step" data-x="4800" data-y="800">
+
+
+<h2>今日取り上げる<code>eager_load</code>の問題</h2>
+
+<ul>
+<li>
+<code>count</code>が複雑すぎる問題</li>
+<li>
+<code>apply_join_dependency</code>忘れすぎ問題</li>
+<li>
+<code>association scope</code>内のJOINを無視する問題</li>
+<li>JOINを無視しないようにするとtable aliasが崩壊する問題</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="0" data-y="1600">
+
+
+<h2>
+<code>eager_load</code>とは</h2>
+
+<p>Active Recordで定義したassociationをJOINして親レコードをロードするときに同時に先読みする機能</p>
+
+<pre style="font-size: 70%"><code>
+  class Post &lt; ActiveRecord::Base
+    has_many :comments
+  end
+
+  class Comment &lt; ActiveRecord::Base
+    belongs_to :post
+  end
+
+  Comment.eager_load(:post).each do |comment|
+    puts "#{comment.body} : commented on #{comment.post.title}"
+  end
+</code></pre>
+
+
+</div>
+<div class="step" data-x="1200" data-y="1600">
+
+
+<h2>
+<code>count</code>が複雑すぎる問題</h2>
+
+<p>性能特性を維持するために<a href="https://github.com/rails/rails/pull/26972">#26972</a>でサブクエリ内(なぜ<code>count</code>でサブクエリが生成されるかは後述する)のORDER BYを維持するよう修正したら(そもそもORDER BYを取り除くと結果が異なってしまうケースもある), PostgreSQL + DISTINCT + ORDER BYの制約に引っかかる問題を生み出してしまった</p>
+
+
+</div>
+<div class="step" data-x="2400" data-y="1600">
+
+
+<h2>
+<code>count</code>が複雑すぎる問題</h2>
+
+<ul>
+<li><a href="https://github.com/rails/rails/pull/29848">Fix <code>COUNT(DISTINCT ...)</code> with <code>ORDER BY</code> and <code>LIMIT</code> #29848</a></li>
+<li><a href="https://github.com/rails/rails/commit/5668dc6b1863ef43be8f8ef0fb1d5db913085fb3">Fix <code>COUNT(DISTINCT ...)</code> for <code>GROUP BY</code> with <code>ORDER BY</code> and <code>LIMIT</code></a></li>
+<li><a href="https://github.com/rails/rails/commit/c6cd9a59f200863ccfe8ad1d9c5a8876c39b9c5c">Fix <code>count(:all)</code> to correctly work <code>distinct</code> with custom SELECT list</a></li>
+<li><a href="https://github.com/rails/rails/commit/ebc09ed9ad9a04338138739226a1a92c7a2707ee">Fix <code>count(:all)</code> with eager loading and having an order other than the driving table</a></li>
+</ul>
+
+
+</div>
+<div class="step" data-x="3600" data-y="1600">
+
+
+<h2>
+<code>count</code>が複雑すぎる問題</h2>
+
+<p>集合関数系メソッドの中で<code>count</code>だけLIMITの扱いが特殊(<code>count</code>する前にLIMITが適応された結果を返す仕様になっている)</p>
+
+<pre style="font-size: 70%"><code>
+  posts = Post.order(:id).limit(3)
+
+  posts.to_a
+  # =&gt; SELECT posts.* FROM posts ORDER BY posts.id LIMIT 3
+
+  posts.count
+  # =&gt; SELECT COUNT(*) FROM (SELECT posts.* FROM posts ORDER BY posts.id LIMIT 3)
+
+  posts.count(:published)
+  # =&gt; SELECT COUNT(count_column) FROM (SELECT posts.published AS count_column FROM posts ORDER BY posts.id LIMIT 3)
+</code></pre>
+
+
+</div>
+<div class="step" data-x="4800" data-y="1600">
+
+
+<h2>
+<code>count</code>が複雑すぎる問題</h2>
+
+<p><code>joins</code>/<code>left_joins</code>と<code>includes</code>/<code>eager_load</code>では同じ結果になるとは限らない(<code>eager_load</code>は主テーブルの件数を維持するために<code>COUNT(DISTINCT id)</code>なクエリを生成する)</p>
+
+<pre style="font-size: 70%"><code>
+  post = Post.create!(title: "post1")
+  Post.create!(title: "post2")
+  Post.create!(title: "post3")
+
+  post.comments.create!([{ body: "comment1" }, { body: "comment2" }]) 
+
+  Post.joins(:comments).count # =&gt; 2
+  Post.left_joins(:comments).count # =&gt; 4
+  Post.eager_load(:comments).count # =&gt; 3
+</code></pre>
+
+
+</div>
+<div class="step" data-x="0" data-y="2400">
+
+
+<h2>
+<code>count</code>が複雑すぎる問題</h2>
+
+<p><code>joins</code>/<code>left_joins</code>と<code>includes</code>/<code>eager_load</code>では同じ結果になるとは限らない(<code>eager_load</code>は主テーブルの件数を維持するために<code>COUNT(DISTINCT id)</code>なクエリを生成する)</p>
+
+<pre style="font-size: 70%"><code>
+  post = Post.create!(title: "post1")
+  Post.create!(title: "post2")
+  Post.create!(title: "post3")
+
+  post.comments.create!([{ body: "comment1" }, { body: "comment2" }]) 
+
+  Post.joins(:comments).map(&amp;:id) # =&gt; [1, 1]
+  Post.left_joins(:comments).map(&amp;:id) # =&gt; [1, 1, 2, 3]
+  Post.eager_load(:comments).map(&amp;:id) # =&gt; [1, 2, 3]
+</code></pre>
+
+
+</div>
+<div class="step" data-x="1200" data-y="2400">
+
+
+<h2>
+<code>count</code>で起きていた問題</h2>
+
+<ul>
+<li>性能を無視すれば元クエリをそのままサブクエリ(<code>SELECT COUNT(*) FROM (SELECT ...)</code>)にすればほぼ期待した結果になる
+
+<ul>
+<li>つまりクエリをなんらかの理由で書き変えようとしているから動かなくなったり結果が正しくなくなったりする</li>
+</ul>
+</li>
+<li>クエリの書き変えを仕様上回避できないのは<code>eager_load</code>のときに付けるDISTINCTだけなのでそのケースだけPostgreSQLにも配慮したクエリが生成されるようにした</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="2400" data-y="2400">
+
+
+<h2>
+<code>apply_join_dependency</code><br>忘れすぎ問題</h2>
+
+<p><code>apply_join_dependency</code>は<code>eager_load</code>をJOINに変換してくれるやつ。<code>eager_load</code>をJOINにしないと正しいクエリにならないケースでは常にクエリ組み立て前に明示的に呼び出す必要がある。</p>
+
+
+</div>
+<div class="step" data-x="3600" data-y="2400">
+
+
+<h2>
+<code>apply_join_dependency</code><br>忘れすぎ問題</h2>
+
+<p>5.1以前では<code>#to_a</code>, <code>#to_sql</code>, <code>#pluck</code>, <code>#exists?</code>, 集合関数系(<code>#count</code> etc)だけでしか明示的に呼ばれてないのでそれ以外のJOINにしないといけないケース(<code>#from</code>, <code>#where</code>, <code>#update_all</code>, <code>#delete_all</code>, <code>#cache_key</code>)では正しく動かなかった</p>
+
+
+</div>
+<div class="step" data-x="4800" data-y="2400">
+
+
+<h2>
+<code>apply_join_dependency</code><br>忘れすぎ問題</h2>
+
+<p>5.2では<code>#exists?</code>や<code>#count</code>が動くケースではほぼ<code>#update_all</code>, <code>#delete_all</code>も動くようになった</p>
+
+<pre style="font-size: 70%"><code>
+  posts = Post.joins(:comments).where("comments.hidden": true)
+
+  if posts.exists?
+    assert_equal posts.count, posts.delete_all
+  end
+</code></pre>
+
+
+</div>
+<div class="step" data-x="0" data-y="3200">
+
+
+<h2>
+<code>association scope</code>内のJOINが無視される問題</h2>
+
+<p>5.1以前では<code>eager_load</code>の<code>association scope</code>内のJOINはすべて捨てられてしまうので、
+例えば特定のタグが付いたコメントだけを<code>eager_load</code>したいようなケースで問題になる。</p>
+
+
+</div>
+<div class="step" data-x="1200" data-y="3200">
+
+
+<h2>
+<code>association scope</code>内のJOINが無視される問題</h2>
+
+<pre style="font-size: 70%"><code>
+  class Post &lt; ActiveRecord::Base
+    has_many :tagged_comments,
+      -&gt; { left_joins(:tags).where("tags.name": "Tagged") },
+      class_name: "Comment", inverse_of: :post
+  end
+
+  class Comment &lt; ActiveRecord::Base
+    belongs_to :post, inverse_of: :tagged_comments
+    has_many :tags
+    has_many :tagged_tags, -&gt; { where(name: "Tagged") }, class_name: "Tag"
+  end
+
+  class Tag &lt; ActiveRecord::Base
+    belongs_to :comment
+  end
+</code></pre>
+
+
+</div>
+<div class="step" data-x="2400" data-y="3200">
+
+
+<h2>
+<code>association scope</code>内のJOINが無視される問題</h2>
+
+<p>5.2ではJOINを捨てないように修正したので以下の例は動くようになった</p>
+
+<pre style="font-size: 70%"><code>
+  class Post &lt; ActiveRecord::Base
+    has_many :tagged_comments,
+      -&gt; { left_joins(:tags).where("tags.name": "Tagged") },
+      class_name: "Comment", inverse_of: :post
+  end
+
+  Post.eager_load(:tagged_comments).first
+</code></pre>
+
+
+</div>
+<div class="step" data-x="3600" data-y="3200">
+
+
+<h2>JOINを無視しないようにするとtable aliasが崩壊する問題</h2>
+
+<p>SQLでは同じテーブルを複数回JOINすると別の名前を付けないとどちらのテーブルのカラムを参照しているのか曖昧になってしまうので、
+同じ名前がJOIN内に出現しないようにtable aliasを振っていく必要がある</p>
+
+
+</div>
+<div class="step" data-x="4800" data-y="3200">
+
+
+<h2>JOINを無視しないようにするとtable aliasが崩壊する問題</h2>
+
+<p>JOINをこれまで捨てていたのでActive Recordには<code>association scope</code>内のJOINにまでalias trackingが考慮されていない問題があった。
+以下の例は<code>tags</code>テーブルが2回JOINされてエラーになる。</p>
+
+<pre style="font-size: 70%"><code>
+  class Post &lt; ActiveRecord::Base
+    has_many :tagged_comments,
+      -&gt; { left_joins(:tags).where("tags.name": "Tagged") },
+      class_name: "Comment", inverse_of: :post
+  end
+
+  Post.eager_load(tagged_comments: :tags).first
+</code></pre>
+
+
+</div>
+<div class="step" data-x="0" data-y="4000">
+
+
+<h2>JOINを無視しないようにするとtable aliasが崩壊する問題</h2>
+
+<p>alias trackingを直したので直接テーブル名を指定しないようにしたら動いて欲しかったけど現時点では以下の例は動かない…</p>
+
+<pre style="font-size: 70%"><code>
+  class Post &lt; ActiveRecord::Base
+    has_many :tagged_comments,
+      -&gt; { left_joins(:tagged_tags) },
+      class_name: "Comment", inverse_of: :post
+  end
+
+  Post.eager_load(tagged_comments: :tags).first
+</code></pre>
+
+
+</div>
+<div class="step" data-x="1200" data-y="4000">
+
+
+<h2>JOINを無視しないようにするとtable aliasが崩壊する問題</h2>
+
+<p>少し効率は悪くなるけどworkaroundとして以下の例なら動作する</p>
+
+<pre style="font-size: 70%"><code>
+  class Post &lt; ActiveRecord::Base
+    has_many :comments
+    has_many :tagged_tags, through: :comments, source: :tagged_tags
+    has_many :tagged_comments, through: :tagged_tags, source: :comment
+  end
+
+  Post.eager_load(tagged_comments: :tags).first
+</code></pre>
+
+
+</div>
+<div class="step" data-x="2400" data-y="4000">
+
+
+<h2>その他の改善</h2>
+
+<ul>
+<li>Improve marshaling performance</li>
+<li>Improve <code>#save</code> performance</li>
+<li>Improve preload through association</li>
+<li>New error classes <code>LockWaitTimeout</code>/<code>StatementTimeout</code>/<code>QueryCanceled</code>
+</li>
+<li>And more</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="3600" data-y="4000">
+
+
+<h2>今日取り上げた<code>eager_load</code>の問題</h2>
+
+<ul>
+<li>
+<code>count</code>が複雑すぎる問題</li>
+<li>
+<code>apply_join_dependency</code>忘れすぎ問題</li>
+<li>
+<code>association scope</code>内のJOINを無視する問題</li>
+<li>JOINを無視しないようにするとtable aliasが崩壊する問題</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="4800" data-y="4000">
+
+
+<h2>まとめ</h2>
+
+<ul>
+<li>Rails 5.2のActive Recordで取り組んできた問題について取り上げた
+
+<ul>
+<li>ここで取り上げた以外にも本当にたくさんの不具合が修正されている</li>
+</ul>
+</li>
+<li>過去最高に安定したActive Recordがリリースされることをプロミスします</li>
+</ul>
+
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script>
+jQuery(function($){
+  $("a[href^='http']").attr('target', '_blank');
+});
+</script>
+
+
+
+<script src="js/impress.js"></script>
+</body>
+</html>
+
