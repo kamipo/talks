@@ -1,3 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'markdown2impress', github: 'tsucchi/ruby-markdown2impress'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+
+gem 'markdown2impress', github: 'kamipo/ruby-markdown2impress'
