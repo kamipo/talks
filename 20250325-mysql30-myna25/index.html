@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>MySQLの思い出話</title>
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+    <link href="css/impress.css"  rel="stylesheet" />
+    <link href="css/pygments.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="impress" class="impress-not-supported">
+    <div class="fallback-message">
+        <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b> or <b>Safari</b> browser. Firefox 10 (to be released soon) will also handle it.</p>
+    </div>
+
+<div class="step" id="title" data-x="0" data-y="0">
+
+
+<h1>MySQLの思い出話</h1>
+
+<p>2025/03/25<br>
+MySQL30周年＆ユーザ会25周年記念イベント<br>
+</p>
+<address>
+Ryuta Kamizono (<a href="https://github.com/kamipo">@kamipo</a>)
+</address>
+
+
+</div>
+<div class="step" data-x="1200" data-y="0">
+
+
+<h2>About me</h2>
+
+<p><img src="img/newmo-kamipo.webp" width="100%">
+<a href="https://note.com/newmohq/n/n49e2901248e2">https://note.com/newmohq/n/n49e2901248e2</a></p>
+
+
+</div>
+<div class="step" data-x="2400" data-y="0">
+
+
+<h2>10年前(2015年)の思い出話をします</h2>
+
+<ul>
+<li>2015年といえば、ハハパパ問題、寿司ビール問題発祥の年
+
+<ul>
+<li>2015-04-01 <a href="https://bugs.mysql.com/bug.php?id=76553">Bug #76553: Sushi-Beer issue of MySQL with utf8mb4</a>
+</li>
+<li>この日は前々職の入社日だった👨‍🎓</li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="3600" data-y="0">
+
+
+<h2>ハハパパ寿司ビール問題</h2>
+
+<p><a href="https://bugs.mysql.com/bug.php?id=76553">https://bugs.mysql.com/bug.php?id=76553</a></p>
+
+<pre><code>utf8mb4 character set treats Sushi Emoji (U+1F363) and Beer Emoji (U+1F37A) as same characters, when using utf8mb4_general_ci or utf8mb4_unicode_ci. Because both collations are treating same weight 0xfffd for Emoji. This issue is not limited to Emoji, but possible to all SMP characters.
+</code></pre>
+
+
+</div>
+<div class="step" data-x="4800" data-y="0">
+
+
+<h2>ハハパパ寿司ビール問題</h2>
+
+<p><a href="https://bugs.mysql.com/bug.php?id=76553">https://bugs.mysql.com/bug.php?id=76553</a></p>
+
+<pre><code>To treat these Emoji as different characters, either utf8mb4_bin or utf8mb4_unicode_520_ci should be used. However, utf8mb4_unicode_520_ci has another issue, so called Haha-Papa issue means Mother-Father issue in Japanese. "ハ" (U+30CF KATAKANA LETTER HA), "パ" (U+30D1 KATAKANA LETTER PA), and "バ" (U+30D0 KATAKANA LETTER BA) can not be recognized different characters.
+</code></pre>
+
+
+</div>
+<div class="step" data-x="0" data-y="800">
+
+
+<h2>ハハパパ寿司ビール問題</h2>
+
+<p>元々はRailsのハハパパ問題解決のためにどういうストーリーだとより問題が伝わるかめちゃくちゃMySQLのUnicodeの挙動について調べてたら、寿司ビール問題の原理も説明できることに気づいた。</p>
+
+<ul>
+<li>2015-03-08 <a href="https://blog.kamipo.net/entry/2015/03/08/145045">utf8_unicode_ci に対する日本の開発者の見解</a>
+</li>
+<li>2015-03-17 <a href="https://blog.kamipo.net/entry/2015/03/17/103457">MySQL と Unicode Collation Algorithm (UCA)</a>
+</li>
+<li>2015-03-23 <a href="https://blog.kamipo.net/entry/2015/03/23/093052">MySQL と寿司ビール問題</a>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="1200" data-y="800">
+
+
+<h2>ハハパパ寿司ビール問題</h2>
+
+<p>梶山さんに外部からissue報告してもらったほうが開発をつつきやすいと言われて寿司ビール問題としてissue報告したところ、MySQL開発陣はバカ受けだったらしい。</p>
+
+
+</div>
+<div class="step" data-x="2400" data-y="800">
+
+
+<h2>2 years later...</h2>
+
+<ul>
+<li>2017-04-10 MySQL 8.0.1 has been released</li>
+<li>Unicodeの照合順序をバキバキに実装してきた
+
+<ul>
+<li><a href="https://dev.mysql.com/blog-archive/mysql-8-0-1-japanese-collation-for-utf8mb4-ja_jp/">MySQL8.0: 日本語のutf8bm4のCollation(文字照合順)</a></li>
+<li><a href="https://dev.mysql.com/blog-archive/mysql-8-0-kana-sensitive-collation-for-japanese-ja_jp/">MySQL 8.0: ひらがなカタカナを判別する日本語用Collation</a></li>
+</ul>
+</li>
+</ul>
+
+
+</div>
+<div class="step" data-x="3600" data-y="800">
+
+
+<h2>日本のコミュニティ発祥でMySQLのUnicode対応がバキバキに進歩したと言っても過言ではない。</h2>
+
+
+</div>
+<div class="step" data-x="4800" data-y="800">
+
+
+<h2>MySQL30周年＆MyNA25周年おめでとうございます🍣🍺</h2>
+
+
+</div>
+
+
+    <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10">
+    </div>
+
+</div>
+
+<div class="hint">
+    <p>Use a spacebar or arrow keys to navigate</p>
+</div>
+<script>
+if ("ontouchstart" in document.documentElement) { 
+    document.querySelector(".hint").innerHTML = "<p>Tap on the left or right to navigate</p>";
+}
+</script>
+<script>
+jQuery(function($){
+  $("a[href^='http']").attr('target', '_blank');
+});
+</script>
+
+
+
+<script src="js/impress.js"></script>
+</body>
+</html>
+
