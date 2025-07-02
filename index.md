@@ -40,4 +40,9 @@
 - [本当は難しいフレンド・タイムライン処理](https://kamipo.github.io/talks/20111013-yapc2011/) - 2011/10/13 YAPC::Asia Tokyo 2011 RejectConf
 
 ## 2010年
+- [VPとSPIDERを使ったMySQL運用](https://www.slideshare.net/kamipo/vpspidermysql) - 2010/12/20 pixiv Tech Meeting
 - [VP & SPIDER イントロダクション (Not Only Sharding)](https://kamipo.github.io/talks/20101211-mysql-casual1/) - 2010/12/11 MySQL Casual Talks vol.1
+
+## 2009年
+- [ピクシブの自作インフラ事情](https://www.slideshare.net/slideshow/ss-2594002/2594002) - 2009/11/25 自作サーバカンファレンス
+- [pixivのインフラを支える技術](https://www.slideshare.net/slideshow/pixiv/2594435) - 2009/09/25 第2回 ライブドア テクニカルセミナー
